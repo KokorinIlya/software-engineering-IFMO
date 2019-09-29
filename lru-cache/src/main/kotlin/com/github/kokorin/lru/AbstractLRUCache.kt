@@ -75,7 +75,8 @@ abstract class AbstractLRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
                 !wasPresented && !wasFull && oldSize + 1 == newSize ||
                 !wasPresented && wasFull && oldSize == newSize
         val valueAdded = cache[key]?.value == value
-        assert(correctSize && valueAdded)
+        val priorityCorrect = head?.key == key && head?.value == value
+        assert(correctSize && valueAdded && priorityCorrect)
 
         return result
     }
@@ -92,8 +93,12 @@ abstract class AbstractLRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
         val result = doDelete(key)
 
         val newSize = size()
+        val isPresented = cache.containsKey(key)
 
-        assert(wasPresented && oldSize == newSize + 1 || !wasPresented && oldSize == newSize)
+        assert(
+            wasPresented && oldSize == newSize + 1 && !isPresented
+                    || !wasPresented && oldSize == newSize && !isPresented
+        )
 
         return result
     }
@@ -106,7 +111,7 @@ abstract class AbstractLRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
      * @return true, if some value is associated with the specified key, false otherwise
      */
     override fun contains(key: K): Boolean {
-        return cache[key] != null
+        return cache.contains(key)
     }
 
     /**
