@@ -34,16 +34,16 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
      * @return Value, associated with the specified key, if key is present in cache, null otherwise.
      */
     override fun get(key: K): V? {
-        val oldSize = size()
+        val oldSize = getCurrentSize()
 
         val result = doGet(key)
 
-        val newSize = size()
+        val newSize = getCurrentSize()
 
         assert(oldSize == newSize)
         assert(result == cache[key]?.value)
         assert(cache.containsKey(key) && head?.key == key || !cache.containsKey(key))
-        assert((size() > 0) xor (head == null && tail == null))
+        assert((getCurrentSize() > 0) xor (head == null && tail == null))
 
         return result
     }
@@ -63,13 +63,13 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
      * was associated with the specified key before insertion, null is returned
      */
     override fun put(key: K, value: V): V? {
-        val oldSize = size()
+        val oldSize = getCurrentSize()
         val wasPresented = cache.containsKey(key)
         val wasFull = isFull()
 
         val result = doPut(key, value)
 
-        val newSize = size()
+        val newSize = getCurrentSize()
 
         assert(
             wasPresented && oldSize == newSize ||
@@ -79,7 +79,7 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
         assert(cache[key]?.value == value)
         assert(head?.key == key && head?.value == value)
         assert(newSize >= 1)
-        assert((size() > 0) xor (head == null && tail == null))
+        assert((getCurrentSize() > 0) xor (head == null && tail == null))
 
         return result
     }
@@ -90,12 +90,12 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
      * {@inheritDoc}
      */
     override fun delete(key: K): V? {
-        val oldSize = size()
+        val oldSize = getCurrentSize()
         val wasPresented = cache.containsKey(key)
 
         val result = doDelete(key)
 
-        val newSize = size()
+        val newSize = getCurrentSize()
         val isPresented = cache.containsKey(key)
 
         assert(
@@ -103,7 +103,7 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
                     || !wasPresented && oldSize == newSize
         )
         assert(!isPresented)
-        assert((size() > 0) xor (head == null && tail == null))
+        assert((getCurrentSize() > 0) xor (head == null && tail == null))
 
         return result
     }
@@ -122,15 +122,15 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
     /**
      * {@inheritDoc}
      */
-    override fun size(): Int {
-        val result = doSize()
+    override fun getCurrentSize(): Int {
+        val result = doGetCurrentSize()
 
         assert(result >= 0)
 
         return result
     }
 
-    protected abstract fun doSize(): Int
+    protected abstract fun doGetCurrentSize(): Int
 
     /**
      * Gets iterator, that can be used to traverse cache content from the newest to
@@ -160,20 +160,25 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
     /**
      * Checks, if cache is full (current cache size is equal to maximal cache size)
      * @return true, if size is equal to maximal cache size, false otherwise.
-     * @see size
+     * @see getCurrentSize
      * @see cacheSize
      */
-    fun isFull() = size() == cacheSize
+    fun isFull() = getCurrentSize() == cacheSize
 
     /**
      * Checks, if cache is not full (current cache size is less than maximal cache size)
      * @return true, if size is less than maximal cache size, false otherwise.
-     * @see size
+     * @see getCurrentSize
      * @see cacheSize
      */
     fun nonFull() = !isFull()
 
     companion object {
-        fun <K, V> getCache(cacheSize: Int): LRUCache<K, V> = LRUCacheImpl<K, V>(cacheSize)
+        /**
+         * Fabric method, that creates new instance of LRU Cache
+         * @param cacheSize cache size for new instance
+         * @return new instance of LRU Cache
+         */
+        fun <K, V> getCache(cacheSize: Int): LRUCache<K, V> = LRUCacheImpl(cacheSize)
     }
 }

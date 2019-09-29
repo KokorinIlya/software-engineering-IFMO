@@ -27,7 +27,7 @@ internal class LRUCacheImpl<K, V> internal constructor(cacheSize: Int) : LRUCach
         if (head != null) {
             head!!.prev = node
         } else {
-            assert(size() == 0)
+            assert(getCurrentSize() == 0)
             assert(tail == null)
             tail = node
         }
@@ -37,7 +37,7 @@ internal class LRUCacheImpl<K, V> internal constructor(cacheSize: Int) : LRUCach
     private fun checkElementsPresence() {
         assert(head != null)
         assert(tail != null)
-        assert(size() > 0)
+        assert(getCurrentSize() > 0)
     }
 
     override fun doGet(key: K): V? {
@@ -100,5 +100,5 @@ internal class LRUCacheImpl<K, V> internal constructor(cacheSize: Int) : LRUCach
         return result
     }
 
-    override fun doSize(): Int = cache.size
+    override fun doGetCurrentSize(): Int = cache.size
 }

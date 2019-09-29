@@ -41,15 +41,15 @@ interface Cache<K, V> : Iterable<Pair<K, V>> {
 
     /**
      * Returns number of key-value pairs in cache
-     * @return cache size
+     * @return current cache size
      */
-    fun size(): Int
+    fun getCurrentSize(): Int
 
     /**
      * Checks, if cache contains zero key-value pairs
      * @return true, if cache size is zero, false otherwise
      */
-    fun isEmpty(): Boolean = size() == 0
+    fun isEmpty(): Boolean = getCurrentSize() == 0
 
     /**
      * Checks, if cache contains at leas one key-value pair

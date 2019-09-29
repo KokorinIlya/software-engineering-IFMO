@@ -7,7 +7,7 @@ class LRUCacheTest {
     @Test
     fun emptyCacheTest() {
         val cache: LRUCache<Int, String> = LRUCache.getCache(5)
-        assertEquals(cache.size(), 0)
+        assertEquals(cache.getCurrentSize(), 0)
         assertEquals(cache.cacheSize, 5)
         assertEquals(cache.isFull(), false)
         assertEquals(cache.nonFull(), true)
