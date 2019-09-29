@@ -182,6 +182,6 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
          * @param cacheSize cache size for new instance
          * @return new instance of LRU Cache
          */
-        fun <K, V> getCache(cacheSize: Int): LRUCache<K, V> = LRUCacheImpl(cacheSize)
+        fun <K, V> getNewCache(cacheSize: Int): LRUCache<K, V> = LRUCacheImpl(cacheSize)
     }
 }

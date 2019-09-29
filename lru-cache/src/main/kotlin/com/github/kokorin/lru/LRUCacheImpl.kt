@@ -88,7 +88,6 @@ internal class LRUCacheImpl<K, V> internal constructor(cacheSize: Int) : LRUCach
     override fun doDelete(key: K): V? {
         val resultNode = cache[key] ?: return null
         assert(resultNode.key == key)
-        // Otherwise, at least one element is presented
         checkElementsPresence()
 
         deleteNodeFromLinkedList(resultNode)

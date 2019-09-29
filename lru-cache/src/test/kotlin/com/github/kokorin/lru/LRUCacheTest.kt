@@ -6,7 +6,7 @@ import org.junit.Assert.*
 class LRUCacheTest {
     @Test
     fun emptyCacheTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         assertEquals(cache.getCurrentSize(), 0)
         assertEquals(cache.cacheSize, 5)
         assertEquals(cache.isFull(), false)
@@ -17,12 +17,12 @@ class LRUCacheTest {
 
     @Test(expected = IllegalArgumentException::class)
     fun incorrectCacheTest() {
-        LRUCache.getCache<Int, String>(-1)
+        LRUCache.getNewCache<Int, String>(-1)
     }
 
     @Test
     fun trivialAddCacheTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         assertTrue(cache.iterator().asSequence().toList() == listOf<Pair<Int, String>>())
         cache.put(1, "1")
         assertTrue(cache.iterator().asSequence().toList() == listOf(Pair(1, "1")))
@@ -34,7 +34,7 @@ class LRUCacheTest {
 
     @Test
     fun getCacheTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         cache.put(1, "1")
         cache.put(3, "3")
         cache.put(5, "5")
@@ -52,7 +52,7 @@ class LRUCacheTest {
 
     @Test
     fun containsCacheTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         cache.put(1, "1")
         cache.put(3, "3")
         cache.put(5, "5")
@@ -70,7 +70,7 @@ class LRUCacheTest {
 
     @Test
     fun deleteCacheTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         cache.put(1, "1")
         cache.put(3, "3")
         cache.put(5, "5")
@@ -82,7 +82,7 @@ class LRUCacheTest {
 
     @Test
     fun updateCacheTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         cache.put(1, "1")
         cache.put(3, "3")
         cache.put(5, "5")
@@ -94,7 +94,7 @@ class LRUCacheTest {
 
     @Test
     fun addInvalidateCacheTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         assertTrue(cache.iterator().asSequence().toList() == listOf<Pair<Int, String>>())
         cache.put(1, "1")
         assertTrue(cache.iterator().asSequence().toList() == listOf(Pair(1, "1")))
@@ -175,7 +175,7 @@ class LRUCacheTest {
 
     @Test(expected = NoSuchElementException::class)
     fun iteratorTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         cache.put(1, "1")
         cache.put(3, "3")
         cache.put(5, "5")
@@ -187,7 +187,7 @@ class LRUCacheTest {
 
     @Test
     fun addDeleteTest() {
-        val cache: LRUCache<Int, String> = LRUCache.getCache(5)
+        val cache: LRUCache<Int, String> = LRUCache.getNewCache(5)
         cache.put(1, "1")
         cache.put(3, "3")
         cache.put(5, "5")
@@ -301,7 +301,7 @@ class LRUCacheTest {
 
     @Test
     fun boxTest() {
-        val box: LRUCache<Int, String> = LRUCache.getCache(1)
+        val box: LRUCache<Int, String> = LRUCache.getNewCache(1)
         assertTrue(box.iterator().asSequence().toList() == listOf<Pair<Int, String>>())
         box.put(1, "1")
         assertTrue(box.iterator().asSequence().toList() == listOf(Pair(1, "1")))
