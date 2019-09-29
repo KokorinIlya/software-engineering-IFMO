@@ -1,4 +1,5 @@
-import com.github.kokorin.lru.LRUCache
+package com.github.kokorin.lru
+
 import org.junit.Test
 import org.junit.Assert.*
 
@@ -12,6 +13,11 @@ class LRUCacheTest {
         assertEquals(cache.nonFull(), true)
         assertEquals(cache.isEmpty(), true)
         assertEquals(cache.nonEmpty(), false)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun incorrectCacheTest() {
+        LRUCache<Int, String>(-1)
     }
 
     @Test
