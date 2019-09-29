@@ -5,7 +5,7 @@ package com.github.kokorin.lru
  * Maximal cache size is specified, when the cache is created.
  * All the key-value pairs, presented in cache, are stored in the linked list, from newest (head) to
  * oldest (tail). Position in the list is called priority, e.g. head element has maximal priority, while
- * tail element has the least priority.
+ * tail element has the lowest priority.
  * If the cache is full (current cache size is equal to maximal cache size) and new key-value pair needs to be
  * inserted, key-value pair with the lowest priority (that is stored in the tail element) is deleted.
  * @author Ilya Kokorin, kokorin.ilya.1998@yandex.ru
@@ -40,10 +40,9 @@ abstract class AbstractLRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
 
         val newSize = size()
 
-        val correctSize = oldSize == newSize
-        val correctResult = result == cache[key]?.value
-        val correctPriority = cache.containsKey(key) && head?.key == key || !cache.containsKey(key)
-        assert(correctSize && correctResult && correctPriority)
+        assert(oldSize == newSize)
+        assert(result == cache[key]?.value)
+        assert(cache.containsKey(key) && head?.key == key || !cache.containsKey(key))
 
         return result
     }
@@ -71,12 +70,14 @@ abstract class AbstractLRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
 
         val newSize = size()
 
-        val correctSize = wasPresented && oldSize == newSize ||
-                !wasPresented && !wasFull && oldSize + 1 == newSize ||
-                !wasPresented && wasFull && oldSize == newSize
-        val valueAdded = cache[key]?.value == value
-        val priorityCorrect = head?.key == key && head?.value == value
-        assert(correctSize && valueAdded && priorityCorrect)
+        assert(
+            wasPresented && oldSize == newSize ||
+                    !wasPresented && !wasFull && oldSize + 1 == newSize ||
+                    !wasPresented && wasFull && oldSize == newSize
+        )
+        assert(cache[key]?.value == value)
+        assert(head?.key == key && head?.value == value)
+        assert(newSize >= 1)
 
         return result
     }
@@ -96,9 +97,10 @@ abstract class AbstractLRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
         val isPresented = cache.containsKey(key)
 
         assert(
-            wasPresented && oldSize == newSize + 1 && !isPresented
-                    || !wasPresented && oldSize == newSize && !isPresented
+            wasPresented && oldSize == newSize + 1
+                    || !wasPresented && oldSize == newSize
         )
+        assert(!isPresented)
 
         return result
     }

@@ -23,31 +23,20 @@ class LRUCache<K, V>(cacheSize: Int) : AbstractLRUCache<K, V>(cacheSize) {
         }
     }
 
-    // Makes node, that was already presented in cache, head of the linked list
-    private fun repushNodeToLinkedList(node: ListNode<K, V>) {
-        assert(cache[node.key] == node)
-        node.prev = null
-        node.next = head
-        if (head != null) {
-            head!!.prev = node
-        }
-        head = node
-    }
-
-    // Adds new node to the head of the linked list
     private fun pushNodeToLinkedList(node: ListNode<K, V>) {
-        assert(node.prev == null && node.next == head)
+        assert(node.next == head)
+        assert(node.prev == null)
         if (head != null) {
             head!!.prev = node
-        }
-        head = node
-        if (tail == null) {
+        } else {
             assert(size() == 0)
+            assert(tail == null)
             tail = node
         }
+        head = node
     }
 
-    private fun checkElementPresence() {
+    private fun checkElementsPresence() {
         assert(head != null)
         assert(tail != null)
         assert(size() > 0)
@@ -56,21 +45,27 @@ class LRUCache<K, V>(cacheSize: Int) : AbstractLRUCache<K, V>(cacheSize) {
     override fun doGet(key: K): V? {
         val resultNode = cache[key] ?: return null
         // Otherwise, at least one element is presented
-        checkElementPresence()
+        checkElementsPresence()
 
         deleteNodeFromLinkedList(resultNode)
-        repushNodeToLinkedList(resultNode)
+        resultNode.prev = null
+        resultNode.next = head
+        pushNodeToLinkedList(resultNode)
         return resultNode.value
     }
 
     override fun doPut(key: K, value: V): V? {
         val maybeResultNode = cache[key]
         if (maybeResultNode != null) {
-            checkElementPresence()
+            checkElementsPresence()
             val oldValue = maybeResultNode.value
             deleteNodeFromLinkedList(maybeResultNode)
+
+            maybeResultNode.prev = null
+            maybeResultNode.next = head
             maybeResultNode.value = value
-            repushNodeToLinkedList(maybeResultNode)
+
+            pushNodeToLinkedList(maybeResultNode)
             return oldValue
         } else {
             if (nonFull()) {
@@ -78,7 +73,7 @@ class LRUCache<K, V>(cacheSize: Int) : AbstractLRUCache<K, V>(cacheSize) {
                 pushNodeToLinkedList(newNode)
                 cache[key] = newNode
             } else {
-                checkElementPresence()
+                checkElementsPresence()
                 val lastNode = tail!!
                 deleteNodeFromLinkedList(lastNode)
                 val removedValue = cache.remove(lastNode.key)?.value
@@ -94,8 +89,9 @@ class LRUCache<K, V>(cacheSize: Int) : AbstractLRUCache<K, V>(cacheSize) {
 
     override fun doDelete(key: K): V? {
         val resultNode = cache[key] ?: return null
+        assert(resultNode.key == key)
         // Otherwise, at least one element is presented
-        checkElementPresence()
+        checkElementsPresence()
 
         deleteNodeFromLinkedList(resultNode)
 
