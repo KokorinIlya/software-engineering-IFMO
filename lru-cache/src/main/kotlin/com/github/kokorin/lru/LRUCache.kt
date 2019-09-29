@@ -125,7 +125,7 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
     override fun getCurrentSize(): Int {
         val result = doGetCurrentSize()
 
-        assert(result >= 0)
+        assert(result in 0..cacheSize)
 
         return result
     }

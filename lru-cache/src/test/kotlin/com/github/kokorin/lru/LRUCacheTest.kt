@@ -313,6 +313,8 @@ class LRUCacheTest {
         assertTrue(box.iterator().asSequence().toList() == listOf(Pair(3, "3")))
         box.delete(3)
         assertTrue(box.iterator().asSequence().toList() == listOf<Pair<Int, String>>())
+        box.put(4, "4")
+        assertTrue(box.iterator().asSequence().toList() == listOf(Pair(4, "4")))
     }
 
 }
