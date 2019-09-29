@@ -1,6 +1,6 @@
 package com.github.kokorin.lru
 
-class LRUCacheImpl<K, V> internal constructor (cacheSize: Int) : LRUCache<K, V>(cacheSize) {
+internal class LRUCacheImpl<K, V> internal constructor(cacheSize: Int) : LRUCache<K, V>(cacheSize) {
     private fun deleteNodeFromLinkedList(node: ListNode<K, V>) {
         val prevNode = node.prev
         val nextNode = node.next

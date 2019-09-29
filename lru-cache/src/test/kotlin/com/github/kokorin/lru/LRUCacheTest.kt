@@ -298,7 +298,7 @@ class LRUCacheTest {
             )
         )
     }
-    
+
     @Test
     fun boxTest() {
         val box: LRUCache<Int, String> = LRUCache.getCache(1)

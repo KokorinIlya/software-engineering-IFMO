@@ -174,6 +174,6 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
     fun nonFull() = !isFull()
 
     companion object {
-        fun<K, V> getCache(cacheSize: Int): LRUCache<K, V> = LRUCacheImpl<K, V>(cacheSize)
+        fun <K, V> getCache(cacheSize: Int): LRUCache<K, V> = LRUCacheImpl<K, V>(cacheSize)
     }
 }
