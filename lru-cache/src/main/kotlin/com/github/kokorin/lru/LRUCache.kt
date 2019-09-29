@@ -15,11 +15,9 @@ class LRUCache<K, V>(cacheSize: Int) : AbstractLRUCache<K, V>(cacheSize) {
         }
         if (node == head) {
             head = node.next
-            assert((size() > 0) xor (head == null))
         }
         if (node == tail) {
             tail = node.prev
-            assert((size() > 0) xor (tail == null))
         }
     }
 
