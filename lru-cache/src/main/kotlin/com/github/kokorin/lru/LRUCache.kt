@@ -44,6 +44,7 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
         assert(result == cache[key]?.value)
         assert(cache.containsKey(key) && head?.key == key || !cache.containsKey(key))
         assert((getCurrentSize() > 0) xor (head == null && tail == null))
+        assert(getCurrentSize() in 0..cacheSize)
 
         return result
     }
@@ -80,6 +81,7 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
         assert(head?.key == key && head?.value == value)
         assert(newSize >= 1)
         assert((getCurrentSize() > 0) xor (head == null && tail == null))
+        assert(getCurrentSize() in 0..cacheSize)
 
         return result
     }
@@ -104,6 +106,7 @@ abstract class LRUCache<K, V>(cacheSize: Int) : Cache<K, V> {
         )
         assert(!isPresented)
         assert((getCurrentSize() > 0) xor (head == null && tail == null))
+        assert(getCurrentSize() in 0..cacheSize)
 
         return result
     }
