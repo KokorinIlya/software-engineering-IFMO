@@ -1,37 +1,37 @@
 package com.github.kokorin.watcher
 
 import com.github.kokorin.watcher.config.VkConfigImpl
-import com.github.kokorin.watcher.vk.QueryMaker
+import com.github.kokorin.watcher.clients.RPSLimitVkClient
+import com.github.kokorin.watcher.actors.VkHashTagWatcherActor
+import com.github.kokorin.watcher.clients.AsyncVkClientImpl
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
-import io.ktor.client.request.get
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.util.*
+import java.util.regex.Pattern
 
-suspend fun sequentialRequests(str: String): String {
-    HttpClient().use {
-        return it.get<String>(str)
-    }
-}
+fun main(args: Array<String>) = runBlocking {
+    val numberPattern = Pattern.compile("[1-9][0-9]*")
+    require(args.size == 2 && numberPattern.matcher(args[1]).matches()) { "Using: <hashtag to look for> <number of hours>" }
+    val hashTag = args[0]
+    val hours = Integer.parseInt(args[1])
+    require(hours in 1..24) { "Hours must be between 1 and 24" }
 
-
-fun main()  = runBlocking {
-    val logger = LoggerFactory.getLogger("com.github.kokorin.watcher.main-logger")
-    logger.debug("Application started")
+    val log = LoggerFactory.getLogger("com.github.kokorin.watcher.main-logger")
+    log.info("Application started")
 
     val vkConfig = VkConfigImpl(
         ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("vk")
     )
+    val vkClient = RPSLimitVkClient(AsyncVkClientImpl(HttpClient(), vkConfig), 2)
+    val hashTagWatcher = VkHashTagWatcherActor(vkClient, Date(), hashTag)
 
-    val str = QueryMaker(vkConfig.version, vkConfig.accessToken, "вконтакте").makeQuery(2)
-
-    val task = GlobalScope.launch(Dispatchers.IO) {
-        println(sequentialRequests(str))
+    val result = GlobalScope.async(Dispatchers.IO) {
+        hashTagWatcher.use {
+            it.doRequest(hours, this).toList()
+        }
     }
-    task.join()
-
+    println(result.await())
 }
