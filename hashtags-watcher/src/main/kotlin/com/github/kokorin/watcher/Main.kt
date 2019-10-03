@@ -1,9 +1,10 @@
 package com.github.kokorin.watcher
 
 import com.github.kokorin.watcher.config.VkConfigImpl
-import com.github.kokorin.watcher.clients.RPSLimitVkClient
+import com.github.kokorin.watcher.clients.vk.RPSLimitVkClient
 import com.github.kokorin.watcher.actors.VkHashTagWatcherActor
-import com.github.kokorin.watcher.clients.AsyncVkClientImpl
+import com.github.kokorin.watcher.clients.http.AsyncHttpClientImpl
+import com.github.kokorin.watcher.clients.vk.AsyncVkClientImpl
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.*
@@ -14,7 +15,9 @@ import java.util.regex.Pattern
 
 fun main(args: Array<String>) = runBlocking {
     val numberPattern = Pattern.compile("[1-9][0-9]*")
-    require(args.size == 2 && numberPattern.matcher(args[1]).matches()) { "Using: <hashtag to look for> <number of hours>" }
+    require(args.size == 2 && numberPattern.matcher(args[1]).matches()) {
+        "Using: <hashtag to look for> <number of hours>"
+    }
     val hashTag = args[0]
     val hours = Integer.parseInt(args[1])
     require(hours in 1..24) { "Hours must be between 1 and 24" }
@@ -25,7 +28,12 @@ fun main(args: Array<String>) = runBlocking {
     val vkConfig = VkConfigImpl(
         ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("vk")
     )
-    val vkClient = RPSLimitVkClient(AsyncVkClientImpl(HttpClient(), vkConfig), 2)
+    val vkClient = RPSLimitVkClient(
+        AsyncVkClientImpl(
+            AsyncHttpClientImpl(HttpClient()),
+            vkConfig
+        ), 2
+    )
     val hashTagWatcher = VkHashTagWatcherActor(vkClient, Date(), hashTag)
 
     val result = GlobalScope.async(Dispatchers.IO) {

@@ -1,6 +1,6 @@
 package com.github.kokorin.watcher.actors
 
-import com.github.kokorin.watcher.clients.AsyncVkClient
+import com.github.kokorin.watcher.clients.vk.AsyncVkClient
 import com.github.kokorin.watcher.model.VkTimedResponse
 import com.github.kokorin.watcher.time.TimeConverter
 import kotlinx.coroutines.*

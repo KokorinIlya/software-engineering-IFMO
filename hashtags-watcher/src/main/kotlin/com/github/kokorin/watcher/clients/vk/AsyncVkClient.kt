@@ -1,4 +1,4 @@
-package com.github.kokorin.watcher.clients
+package com.github.kokorin.watcher.clients.vk
 
 import com.github.kokorin.watcher.model.VkResponse
 

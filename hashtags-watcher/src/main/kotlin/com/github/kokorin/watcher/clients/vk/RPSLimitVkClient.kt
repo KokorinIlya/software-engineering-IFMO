@@ -1,11 +1,12 @@
-package com.github.kokorin.watcher.clients
+package com.github.kokorin.watcher.clients.vk
 
 import com.github.kokorin.watcher.model.VkResponse
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class RPSLimitVkClient(private val client: AsyncVkClient, private val rps: Int) : AsyncVkClient {
+class RPSLimitVkClient(private val client: AsyncVkClient, private val rps: Int) :
+    AsyncVkClient {
     private val scope = CoroutineScope(Dispatchers.Default)
 
     override suspend fun searchHashTag(
@@ -22,14 +23,13 @@ class RPSLimitVkClient(private val client: AsyncVkClient, private val rps: Int) 
             } else {
                 if (curExecutingTasks.compareAndSet(executingTasks, executingTasks + 1)) {
                     val answer = client.searchHashTag(hashTag, startTime, endTime)
-
                     scope.launch {
                         delay(TimeUnit.SECONDS.toMillis(1))
                         curExecutingTasks.getAndDecrement()
                     }
                     return answer
                 } else {
-                    delay(100)
+                    yield()
                     continue
                 }
             }

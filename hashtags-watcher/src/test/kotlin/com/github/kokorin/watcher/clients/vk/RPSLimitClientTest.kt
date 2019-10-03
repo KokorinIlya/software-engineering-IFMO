@@ -1,4 +1,4 @@
-package com.github.kokorin.watcher.clients
+package com.github.kokorin.watcher.clients.vk
 
 import com.github.kokorin.watcher.model.VkResponse
 import kotlinx.coroutines.GlobalScope
@@ -40,6 +40,7 @@ class RPSLimitClientTest {
             }
         }
         jobs.forEach { it.join() }
+        client.close()
         val sortedTimes = mockedClient.seconds.toList().sorted()
         for (i in 0 until sortedTimes.size - 5) {
             assertTrue(sortedTimes[i] < sortedTimes[i + 5])
