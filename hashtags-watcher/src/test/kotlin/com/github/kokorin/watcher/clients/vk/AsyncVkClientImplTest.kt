@@ -33,4 +33,27 @@ class AsyncVkClientImplTest {
         coEvery { httpClient.get(expectedString) } returns response
         assertEquals(vkClient.searchHashTag(hashtag, startTime, endTime), VkResponse(Response(2)))
     }
+
+    @Test(expected = com.beust.klaxon.KlaxonException::class)
+    fun testWrongResponse() = runBlocking {
+        val httpClient = mockk<AsyncHttpClient>()
+        val vkConfig = VkConfigImpl(
+            ConfigFactory.parseFile(File("src/test/resources/application.testing.conf")).getConfig("vk")
+        )
+        val vkClient = AsyncVkClientImpl(httpClient, vkConfig)
+        val hashtag = "вконтакте"
+        val startTime = 12345L
+        val endTime = 12355L
+        val expectedString = "${vkConfig.schema}://${vkConfig.host}:${vkConfig.port}/method/newsfeed.search?" +
+                "q=%23$hashtag&" +
+                "v=${vkConfig.version.major}.${vkConfig.version.minor}&" +
+                "access_token=${vkConfig.accessToken}&" +
+                "count=0&" +
+                "start_time=$startTime&" +
+                "end_time=$endTime"
+        val response = "abacaba"
+        coEvery { httpClient.get(expectedString) } returns response
+        vkClient.searchHashTag(hashtag, startTime, endTime)
+        val a = 2 // method should be void
+    }
 }
