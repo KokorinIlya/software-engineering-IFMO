@@ -1,19 +1,15 @@
-package com.github.kokorin.watcher.clients.vk
+package com.github.kokorin.watcher.clients.http
 
-import com.github.kokorin.watcher.model.VkResponse
 import kotlinx.coroutines.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-class RPSLimitVkClient(private val client: AsyncVkClient, private val rps: Int) :
-    AsyncVkClient {
-    private val scope = CoroutineScope(Dispatchers.Default)
-
-    override suspend fun searchHashTag(
-        hashTag: String,
-        startTime: Long,
-        endTime: Long
-    ): VkResponse? {
+class RPSLimitHttpClient(
+    private val client: AsyncHttpClient,
+    private val rps: Int,
+    private val timeUnit: TimeUnit = TimeUnit.SECONDS
+) : AsyncHttpClient {
+    override suspend fun get(query: String): String {
         while (true) {
             val executingTasks = curExecutingTasks.get()
             assert(executingTasks <= rps)
@@ -22,9 +18,9 @@ class RPSLimitVkClient(private val client: AsyncVkClient, private val rps: Int) 
                 continue
             } else {
                 if (curExecutingTasks.compareAndSet(executingTasks, executingTasks + 1)) {
-                    val answer = client.searchHashTag(hashTag, startTime, endTime)
+                    val answer = client.get(query)
                     scope.launch {
-                        delay(TimeUnit.SECONDS.toMillis(1))
+                        delay(timeUnit.toMillis(1))
                         curExecutingTasks.getAndDecrement()
                     }
                     return answer
@@ -35,6 +31,8 @@ class RPSLimitVkClient(private val client: AsyncVkClient, private val rps: Int) 
             }
         }
     }
+
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     override fun close() {
         client.close()

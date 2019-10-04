@@ -11,10 +11,10 @@ import org.slf4j.LoggerFactory
 class AsyncVkClientImpl(private val httpClient: AsyncHttpClient, private val vkConfig: VkConfig) :
     AsyncVkClient {
     override suspend fun searchHashTag(hashTag: String, startTime: Long, endTime: Long): VkResponse? {
-        val query = "https://api.vk.com/method/newsfeed.search?" +
+        val query = "${vkConfig.schema}://${vkConfig.host}:${vkConfig.port}/method/newsfeed.search?" +
                 "q=%23$hashTag&" +
-                "v=${vkConfig.version.version}&" +
-                "access_token=${vkConfig.accessToken.accessToken}&" +
+                "v=${vkConfig.version.major}.${vkConfig.version.minor}&" +
+                "access_token=${vkConfig.accessToken}&" +
                 "count=0&" +
                 "start_time=$startTime&" +
                 "end_time=$endTime"

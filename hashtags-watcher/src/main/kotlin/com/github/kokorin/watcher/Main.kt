@@ -1,9 +1,9 @@
 package com.github.kokorin.watcher
 
 import com.github.kokorin.watcher.config.VkConfigImpl
-import com.github.kokorin.watcher.clients.vk.RPSLimitVkClient
 import com.github.kokorin.watcher.actors.VkHashTagWatcherActor
 import com.github.kokorin.watcher.clients.http.AsyncHttpClientImpl
+import com.github.kokorin.watcher.clients.http.RPSLimitHttpClient
 import com.github.kokorin.watcher.clients.vk.AsyncVkClientImpl
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
@@ -28,11 +28,12 @@ fun main(args: Array<String>) = runBlocking {
     val vkConfig = VkConfigImpl(
         ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("vk")
     )
-    val vkClient = RPSLimitVkClient(
-        AsyncVkClientImpl(
+    val vkClient = AsyncVkClientImpl(
+        RPSLimitHttpClient(
             AsyncHttpClientImpl(HttpClient()),
-            vkConfig
-        ), 2
+            vkConfig.rps
+        ),
+        vkConfig
     )
     val hashTagWatcher = VkHashTagWatcherActor(vkClient, Date(), hashTag)
 

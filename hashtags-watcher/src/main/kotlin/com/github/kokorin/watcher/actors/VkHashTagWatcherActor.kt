@@ -51,6 +51,7 @@ class VkHashTagWatcherActor(
             log.error("Timeout, only $responsesReceived responses from $maxHours were received")
         } finally {
             children.forEach { it.cancel() }
+            children.forEach { it.join() }
         }
         return answerArray
     }
