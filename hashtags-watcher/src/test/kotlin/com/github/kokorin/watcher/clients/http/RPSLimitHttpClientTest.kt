@@ -9,28 +9,28 @@ import org.junit.Assert.*
 import java.util.concurrent.ConcurrentLinkedDeque
 import java.util.concurrent.TimeUnit
 
+
 class RPSLimitHttpClientTest {
-    private class MockHttpClient : AsyncHttpClient {
-        override suspend fun get(query: String): String {
-            val currentTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
-            delay(100)
-            seconds.addFirst(currentTime)
-            return "Response"
-        }
-
-        val seconds = ConcurrentLinkedDeque<Long>()
-        override fun close() {
-
-        }
-
-
-    }
-
     @Test
     fun rpsLimitTest() = runBlocking {
         val iterationsCount = 100
         val coroutinesCount = 10
-        val mockedClient = MockHttpClient()
+        val mockedClient = object : AsyncHttpClient {
+            val seconds = ConcurrentLinkedDeque<Long>()
+            var closeCounts: Int = 0
+
+            override suspend fun get(query: String): String {
+                val currentTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
+                delay(100)
+                seconds.addFirst(currentTime)
+                return "Response"
+            }
+
+            override fun close() {
+                closeCounts += 1
+            }
+        }
+
         val client = RPSLimitHttpClient(mockedClient, 5)
         val jobs = (1..coroutinesCount).map {
             GlobalScope.launch {
@@ -45,5 +45,6 @@ class RPSLimitHttpClientTest {
         for (i in 0 until sortedTimes.size - 5) {
             assertTrue(sortedTimes[i] < sortedTimes[i + 5])
         }
+        assertEquals(mockedClient.closeCounts, 1)
     }
 }
