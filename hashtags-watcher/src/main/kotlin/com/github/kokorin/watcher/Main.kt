@@ -5,6 +5,7 @@ import com.github.kokorin.watcher.actors.VkHashTagWatcherActor
 import com.github.kokorin.watcher.clients.http.AsyncHttpClientImpl
 import com.github.kokorin.watcher.clients.http.RPSLimitHttpClient
 import com.github.kokorin.watcher.clients.vk.AsyncVkClientImpl
+import com.github.kokorin.watcher.time.TimeConverter
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.*
@@ -35,7 +36,8 @@ fun main(args: Array<String>) = runBlocking {
         ),
         vkConfig
     )
-    val hashTagWatcher = VkHashTagWatcherActor(vkClient, Date(), hashTag)
+    val timeConverter = TimeConverter(Date())
+    val hashTagWatcher = VkHashTagWatcherActor(vkClient, timeConverter, hashTag)
 
     val result = GlobalScope.async(Dispatchers.IO) {
         hashTagWatcher.use {

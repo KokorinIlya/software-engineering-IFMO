@@ -7,12 +7,11 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.slf4j.LoggerFactory
 import java.io.Closeable
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 class VkHashTagWatcherActor(
     private val client: AsyncVkClient,
-    baseDate: Date,
+    private val timeConverter: TimeConverter,
     private val hashTag: String
 ) : Closeable {
 
@@ -21,7 +20,6 @@ class VkHashTagWatcherActor(
     }
 
     private val channel = Channel<VkTimedResponse>()
-    private val timeConverter = TimeConverter(baseDate)
     private val log = LoggerFactory.getLogger(this.javaClass)
 
     companion object {
