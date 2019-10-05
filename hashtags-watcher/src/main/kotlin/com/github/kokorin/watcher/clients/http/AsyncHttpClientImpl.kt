@@ -16,7 +16,7 @@ class AsyncHttpClientImpl(private val httpClient: HttpClient) : AsyncHttpClient 
             httpClient.close()
             log.info("KTOR Http client closed")
         } catch (e: Throwable) {
-            log.error("Error while closing Http client", e)
+            log.error("Error while closing KTOR Http client", e)
             throw e
         }
     }

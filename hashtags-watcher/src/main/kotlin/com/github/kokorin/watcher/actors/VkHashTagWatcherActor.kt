@@ -37,6 +37,7 @@ class VkHashTagWatcherActor(
         try {
             withTimeout(actorConfig.timeout.toMillis()) {
                 for (curTimedResponse in channel) {
+                    assert(curTimedResponse.hour in 1..maxHours)
                     responsesReceived += 1
                     answerArray[curTimedResponse.hour - 1] = curTimedResponse.count
                     if (responsesReceived == maxHours) {

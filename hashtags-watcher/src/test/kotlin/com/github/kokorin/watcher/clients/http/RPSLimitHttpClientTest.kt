@@ -1,14 +1,14 @@
 package com.github.kokorin.watcher.clients.http
 
+import com.github.kokorin.watcher.utils.toSeconds
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import org.junit.Assert.*
+import java.time.Duration
 import java.util.concurrent.ConcurrentLinkedDeque
-import java.util.concurrent.TimeUnit
-
 
 class RPSLimitHttpClientTest {
     @Test
@@ -20,7 +20,7 @@ class RPSLimitHttpClientTest {
             var closeCounts: Int = 0
 
             override suspend fun get(query: String): String {
-                val currentTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
+                val currentTime = Duration.ofMillis(System.currentTimeMillis()).toSeconds()
                 delay(100)
                 seconds.addFirst(currentTime)
                 return "Response"
