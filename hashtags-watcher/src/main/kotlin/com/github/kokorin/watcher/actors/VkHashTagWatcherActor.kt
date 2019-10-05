@@ -1,18 +1,22 @@
 package com.github.kokorin.watcher.actors
 
 import com.github.kokorin.watcher.clients.vk.AsyncVkClient
+import com.github.kokorin.watcher.config.ActorConfig
+import com.github.kokorin.watcher.model.HashTagResponse
+import com.github.kokorin.watcher.model.NoResponse
 import com.github.kokorin.watcher.model.VkTimedResponse
 import com.github.kokorin.watcher.time.TimeConverter
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import org.slf4j.LoggerFactory
 import java.io.Closeable
-import java.util.concurrent.TimeUnit
 
 class VkHashTagWatcherActor(
     private val client: AsyncVkClient,
     private val timeConverter: TimeConverter,
-    private val hashTag: String
+    private val hashTag: String,
+    private val actorConfig: ActorConfig,
+    private val childrenConfig: ActorConfig
 ) : Closeable {
 
     override fun close() {
@@ -22,20 +26,16 @@ class VkHashTagWatcherActor(
     private val channel = Channel<VkTimedResponse>()
     private val log = LoggerFactory.getLogger(this.javaClass)
 
-    companion object {
-        private val totalTimeoutSeconds = TimeUnit.MINUTES.toSeconds(2L)
-    }
-
-    suspend fun doRequest(maxHours: Int, coroutineScope: CoroutineScope): IntArray {
+    suspend fun doRequest(maxHours: Int, coroutineScope: CoroutineScope): Array<HashTagResponse> {
         var responsesReceived = 0
-        val answerArray = IntArray(maxHours) { -2 }
+        val answerArray = Array<HashTagResponse>(maxHours) { NoResponse }
         val children = (1..maxHours).map {
             coroutineScope.launch {
-                VkSearchActor(channel, client, hashTag, timeConverter).makeSingleRequest(it)
+                VkSearchActor(channel, client, hashTag, timeConverter, childrenConfig).makeSingleRequest(it)
             }
         }
         try {
-            withTimeout(TimeUnit.SECONDS.toMillis(totalTimeoutSeconds)) {
+            withTimeout(actorConfig.timeout.toMillis()) {
                 for (curTimedResponse in channel) {
                     responsesReceived += 1
                     answerArray[curTimedResponse.hour - 1] = curTimedResponse.count

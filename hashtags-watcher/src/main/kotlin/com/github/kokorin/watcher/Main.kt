@@ -5,12 +5,17 @@ import com.github.kokorin.watcher.actors.VkHashTagWatcherActor
 import com.github.kokorin.watcher.clients.http.AsyncHttpClientImpl
 import com.github.kokorin.watcher.clients.http.RPSLimitHttpClient
 import com.github.kokorin.watcher.clients.vk.AsyncVkClientImpl
+import com.github.kokorin.watcher.config.ActorConfigImpl
+import com.github.kokorin.watcher.model.HashTagCount
+import com.github.kokorin.watcher.model.IncorrectVkAnswer
+import com.github.kokorin.watcher.model.NoResponse
 import com.github.kokorin.watcher.time.TimeConverter
 import com.typesafe.config.ConfigFactory
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.time.Duration
 import java.util.*
 import java.util.regex.Pattern
 
@@ -36,13 +41,28 @@ fun main(args: Array<String>) = runBlocking {
         ),
         vkConfig
     )
+
+    val watcherActorConfig = ActorConfigImpl(
+        ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("watcher-actor")
+    )
+    val searchActorConfig = ActorConfigImpl(
+        ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("search-actor")
+    )
     val timeConverter = TimeConverter(Date())
-    val hashTagWatcher = VkHashTagWatcherActor(vkClient, timeConverter, hashTag)
+    val hashTagWatcher = VkHashTagWatcherActor(vkClient, timeConverter, hashTag, watcherActorConfig, searchActorConfig)
 
     val result = GlobalScope.async(Dispatchers.IO) {
         hashTagWatcher.use {
             it.doRequest(hours, this).toList()
         }
     }
-    println(result.await())
+    for ((hour, apiResult) in result.await().withIndex()) {
+        val toPrint = "За ${hour + 1} часов " +
+                when (apiResult) {
+                    is HashTagCount -> "было ${apiResult.count} новостей с хештегом #$hashTag"
+                    is IncorrectVkAnswer -> "ВК апи вернуло некорректный результат"
+                    is NoResponse -> "не пришло ответа от ВК апи"
+                }
+        println(toPrint)
+    }
 }
