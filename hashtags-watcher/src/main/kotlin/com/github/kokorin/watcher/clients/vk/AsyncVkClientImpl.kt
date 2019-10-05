@@ -8,8 +8,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import org.slf4j.LoggerFactory
 
-class AsyncVkClientImpl(private val httpClient: AsyncHttpClient, private val vkConfig: VkConfig) :
-    AsyncVkClient {
+class AsyncVkClientImpl(private val httpClient: AsyncHttpClient, private val vkConfig: VkConfig) : AsyncVkClient {
     override suspend fun searchHashTag(hashTag: String, startTime: Long, endTime: Long): VkResponse? {
         val query = "${vkConfig.schema}://${vkConfig.host}:${vkConfig.port}/method/newsfeed.search?" +
                 "q=%23$hashTag&" +
