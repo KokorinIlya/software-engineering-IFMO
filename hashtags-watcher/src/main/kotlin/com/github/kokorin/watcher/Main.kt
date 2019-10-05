@@ -15,7 +15,6 @@ import io.ktor.client.HttpClient
 import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import java.io.File
-import java.time.Duration
 import java.util.*
 import java.util.regex.Pattern
 
@@ -48,7 +47,8 @@ fun main(args: Array<String>) = runBlocking {
     val searchActorConfig = ActorConfigImpl(
         ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("search-actor")
     )
-    val timeConverter = TimeConverter(Date())
+    val curDate = Date()
+    val timeConverter = TimeConverter(curDate)
     val hashTagWatcher = VkHashTagWatcherActor(vkClient, timeConverter, hashTag, watcherActorConfig, searchActorConfig)
 
     val result = GlobalScope.async(Dispatchers.IO) {
@@ -57,7 +57,7 @@ fun main(args: Array<String>) = runBlocking {
         }
     }
     for ((hour, apiResult) in result.await().withIndex()) {
-        val toPrint = "За ${hour + 1} часов " +
+        val toPrint = "За временной промежуток от ${hour + 1} до $hour часов до $curDate " +
                 when (apiResult) {
                     is HashTagCount -> "было ${apiResult.count} новостей с хештегом #$hashTag"
                     is IncorrectVkAnswer -> "ВК апи вернуло некорректный результат"
