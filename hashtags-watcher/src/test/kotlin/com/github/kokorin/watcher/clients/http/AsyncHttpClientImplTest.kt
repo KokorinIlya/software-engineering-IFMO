@@ -12,10 +12,13 @@ import io.ktor.client.HttpClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.runBlocking
+import org.slf4j.LoggerFactory
+import java.io.Closeable
 
 
 class AsyncHttpClientImplTest {
     private val port = 2517
+    private val log = LoggerFactory.getLogger(this.javaClass)
 
     @Test
     fun testGetRequests() = runBlocking {
@@ -31,12 +34,21 @@ class AsyncHttpClientImplTest {
     }
 
     private suspend fun withStubServer(port: Int, callback: suspend CoroutineScope.(StubServer) -> Unit) {
-        var stubServer: StubServer? = null
-        try {
-            stubServer = StubServer(port).run()
-            GlobalScope.callback(stubServer)
-        } finally {
-            stubServer?.stop()
+        object : Closeable {
+            val server = StubServer(port)
+
+            override fun close() {
+                try {
+                    server.stop()
+                    log.info("Stub server stopped")
+                } catch (e: Throwable) {
+                    log.info("Error stopping stub server")
+                    throw e
+                }
+            }
+        }.use {
+            it.server.start()
+            GlobalScope.callback(it.server)
         }
     }
 }
