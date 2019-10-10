@@ -51,7 +51,6 @@ class ProductsDaoImpl(
             connection.createStatement().use { statement ->
                 statement.executeQuery(sql).use { resultSet ->
                     while (resultSet.next()) {
-                        println("Getting")
                         val name = resultSet.getString("name")
                         val price = resultSet.getInt("price")
                         result.add(Product(name, price))

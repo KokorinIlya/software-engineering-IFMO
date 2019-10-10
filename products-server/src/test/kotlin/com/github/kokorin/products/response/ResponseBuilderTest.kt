@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.Assert.*
 import org.jsoup.Jsoup
 
-class ResponseBuildierTest {
+class ResponseBuilderTest {
     @Test
     fun testAdd() {
         val responseBuilder = ResponseBuilder("Prefix")
