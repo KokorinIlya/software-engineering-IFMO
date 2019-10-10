@@ -4,6 +4,8 @@ import com.github.kokorin.products.config.ApplicationConfig
 import com.github.kokorin.products.config.ApplicationConfigImpl
 import com.github.kokorin.products.config.SqlCommandsHolder
 import com.github.kokorin.products.config.SqlCommandsHolderImpl
+import com.github.kokorin.products.connection.ConnectionProvider
+import com.github.kokorin.products.connection.ConnectionProviderImpl
 import com.github.kokorin.products.dao.ProductsDaoImpl
 import com.github.kokorin.products.servlet.AddProductServlet
 import com.github.kokorin.products.servlet.DeleteAllProductsServlet
@@ -23,7 +25,8 @@ fun main() {
     )
     val sqlCommandsHolder: SqlCommandsHolder = SqlCommandsHolderImpl(Paths.get("src/main/sql"))
 
-    val productsDao = ProductsDaoImpl(config.database, sqlCommandsHolder)
+    val connectionProvider: ConnectionProvider = ConnectionProviderImpl(config.database)
+    val productsDao = ProductsDaoImpl(connectionProvider, sqlCommandsHolder)
     productsDao.createProductsTable()
 
     val server = Server(config.port)

@@ -1,13 +1,14 @@
 package com.github.kokorin.products.dao
 
 import com.github.kokorin.products.config.SqlCommandsHolder
+import com.github.kokorin.products.connection.ConnectionProvider
 import com.github.kokorin.products.model.Product
-import java.sql.DriverManager
 import java.sql.SQLException
 
-class ProductsDaoImpl(private val connectionName: String, private val sqlCommandsHolder: SqlCommandsHolder) :
-    ProductsDao {
-
+class ProductsDaoImpl(
+    private val connectionProvider: ConnectionProvider,
+    private val sqlCommandsHolder: SqlCommandsHolder
+) : ProductsDao {
     override fun getCount(): Int {
         return getScalarResult(sqlCommandsHolder.productsCountCommand)
     }
@@ -34,7 +35,7 @@ class ProductsDaoImpl(private val connectionName: String, private val sqlCommand
 
     override fun addProduct(product: Product) {
         val sql = sqlCommandsHolder.insertProductCommand
-        DriverManager.getConnection(connectionName).use { connection ->
+        connectionProvider.getConnection().use { connection ->
             connection.prepareStatement(sql).use { statement ->
                 statement.setString(1, product.name)
                 statement.setInt(2, product.price)
@@ -46,7 +47,7 @@ class ProductsDaoImpl(private val connectionName: String, private val sqlCommand
     override fun getAllProducts(): List<Product> {
         val result = mutableListOf<Product>()
         val sql = sqlCommandsHolder.selectAllCommand
-        DriverManager.getConnection(connectionName).use { connection ->
+        connectionProvider.getConnection().use { connection ->
             connection.createStatement().use { statement ->
                 statement.executeQuery(sql).use { resultSet ->
                     while (resultSet.next()) {
@@ -61,7 +62,7 @@ class ProductsDaoImpl(private val connectionName: String, private val sqlCommand
     }
 
     private fun chooseFirst(sql: String): Product? {
-        DriverManager.getConnection(connectionName).use { connection ->
+        connectionProvider.getConnection().use { connection ->
             connection.prepareStatement(sql).use { statement ->
                 statement.setInt(1, 1)
                 statement.executeQuery().use { resultSet ->
@@ -77,7 +78,7 @@ class ProductsDaoImpl(private val connectionName: String, private val sqlCommand
     }
 
     private fun getScalarResult(sql: String): Int {
-        DriverManager.getConnection(connectionName).use { connection ->
+        connectionProvider.getConnection().use { connection ->
             connection.createStatement().use { statement ->
                 statement.executeQuery(sql).use { resultSet ->
                     if (resultSet.next()) {
@@ -90,7 +91,7 @@ class ProductsDaoImpl(private val connectionName: String, private val sqlCommand
     }
 
     private fun executeSimpleCommand(sql: String) {
-        DriverManager.getConnection(connectionName).use { connection ->
+        connectionProvider.getConnection().use { connection ->
             connection.createStatement().use { statement ->
                 statement.executeUpdate(sql)
             }
