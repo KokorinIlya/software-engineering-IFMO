@@ -35,7 +35,7 @@ fun main() {
     context.contextPath = "/"
     server.handler = context
 
-    val servlets = mapOf<String, HttpServlet>(
+    val servlets = mapOf<String, HttpServlet> (
         Pair("/add-product", AddProductServlet(productsDao)),
         Pair("/get-products", GetProductsServlet(productsDao)),
         Pair("/query", QueryServlet(productsDao)),
