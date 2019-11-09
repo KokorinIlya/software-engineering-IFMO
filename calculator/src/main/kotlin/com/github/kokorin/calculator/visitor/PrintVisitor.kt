@@ -1,29 +1,29 @@
 package com.github.kokorin.calculator.visitor
 
+import com.github.kokorin.calculator.io.Printer
 import com.github.kokorin.calculator.tokenization.ArithmeticOperationToken
 import com.github.kokorin.calculator.tokenization.BracketToken
 import com.github.kokorin.calculator.tokenization.NumberToken
 import com.github.kokorin.calculator.tokenization.Token
 
-class PrintVisitor : TokenVisitor {
-
+class PrintVisitor(private val printer: Printer) : TokenVisitor {
     override fun visit(tokens: List<Token>) {
         tokens.forEach {
             it.accept(this)
-            print(" ")
+            printer.write(" ")
         }
-        println()
+        printer.writeLn()
     }
 
     override fun visit(token: NumberToken) {
-        print(token.toString())
+        printer.write(token.toString())
     }
 
     override fun visit(token: BracketToken) {
-        print(token.toString())
+        printer.write(token.toString())
     }
 
     override fun visit(token: ArithmeticOperationToken) {
-        print(token.toString())
+        printer.write(token.toString())
     }
 }
