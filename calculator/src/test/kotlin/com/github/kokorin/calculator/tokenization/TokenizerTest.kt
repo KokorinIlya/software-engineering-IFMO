@@ -1,4 +1,4 @@
-package com.github.kokorin.tokenization
+package com.github.kokorin.calculator.tokenization
 
 import com.github.kokorin.calculator.tokenization.*
 import org.junit.Test
@@ -44,6 +44,6 @@ class TokenizerTest {
     fun incorrectTest() {
         val tokenizer = Tokenizer()
         val s = "3 + 7 a"
-        val tokens = tokenizer.tokenize(s)
+        tokenizer.tokenize(s)
     }
 }

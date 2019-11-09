@@ -3,7 +3,7 @@ package com.github.kokorin.calculator
 import com.github.kokorin.calculator.io.ConsolePrinter
 import com.github.kokorin.calculator.tokenization.Tokenizer
 import com.github.kokorin.calculator.visitor.CalcVisitor
-import com.github.kokorin.calculator.visitor.ParseVisitor
+import com.github.kokorin.calculator.visitor.ConvertToRPNVisitor
 import com.github.kokorin.calculator.visitor.PrintVisitor
 
 fun main() {
@@ -16,7 +16,7 @@ fun main() {
         println("Tokens after tokenization:")
         printVisitor.visit(tokens)
 
-        val parseVisitor = ParseVisitor()
+        val parseVisitor = ConvertToRPNVisitor()
         parseVisitor.visit(tokens)
         val transformed = parseVisitor.getParsed()
 

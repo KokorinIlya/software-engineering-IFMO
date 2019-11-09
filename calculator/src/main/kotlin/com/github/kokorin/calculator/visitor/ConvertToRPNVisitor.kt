@@ -5,7 +5,7 @@ import com.github.kokorin.calculator.tokenization.*
 import java.util.*
 import kotlin.collections.ArrayList
 
-class ParseVisitor : TokenVisitor {
+class ConvertToRPNVisitor : TokenVisitor {
     companion object {
         private val priorities: Map<ArithmeticOperationToken, Int> = mapOf(
             Pair(PlusToken, 0),

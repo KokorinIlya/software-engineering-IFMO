@@ -8,9 +8,11 @@ import com.github.kokorin.calculator.tokenization.Token
 
 class PrintVisitor(private val printer: Printer) : TokenVisitor {
     override fun visit(tokens: List<Token>) {
-        tokens.forEach {
-            it.accept(this)
-            printer.write(" ")
+        tokens.forEachIndexed { index, token ->
+            token.accept(this)
+            if (index != tokens.size - 1) {
+                printer.write(" ")
+            }
         }
         printer.writeLn()
     }
