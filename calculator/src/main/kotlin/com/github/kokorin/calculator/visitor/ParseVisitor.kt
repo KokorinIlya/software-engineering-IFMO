@@ -1,6 +1,6 @@
 package com.github.kokorin.calculator.visitor
 
-import com.github.kokorin.calculator.getOrThrow
+import com.github.kokorin.calculator.utils.getOrThrow
 import com.github.kokorin.calculator.tokenization.*
 import java.util.*
 import kotlin.collections.ArrayList
