@@ -12,26 +12,11 @@ data class Vertex(val number: Int)
 data class Edge(val from: Vertex, val to: Vertex)
 
 class ListGraph(
-    private val vertexCount: Int,
+    override val vertexCount: Int,
     private val edges: List<Edge>,
     private val drawingApi: DrawingApi
 ) : Graph(drawingApi) {
-    override fun drawGraph() {
-        val center = Point(drawingApi.drawingAreaWidth / 2, drawingApi.drawingAreaHeight / 2)
-        val bigR = min(drawingApi.drawingAreaHeight, drawingApi.drawingAreaWidth) * 0.3
-        val vertexR = sqrt(min(drawingApi.drawingAreaHeight, drawingApi.drawingAreaHeight).toDouble()).toInt() / 2
-
-        fun getVertexCenter(i: Int): Point {
-            return Point(
-                (center.x + bigR * cos(Math.PI * 2 * i / vertexCount)).toInt(),
-                (center.y + bigR * sin(Math.PI * 2 * i / vertexCount)).toInt()
-            )
-        }
-
-        for (i in (0 until vertexCount)) {
-            drawingApi.drawCircle(Circle(getVertexCenter(i), vertexR))
-        }
-
+    override fun drawEdges() {
         for (edge in edges) {
             drawingApi.drawLine(getVertexCenter(edge.from.number), getVertexCenter(edge.to.number))
         }
@@ -47,8 +32,8 @@ class ListGraph(
                     ?.map { it.toInt() }
                     ?: throw IllegalArgumentException("Specify from and to vertex")
                 require(line.size == 2) { "Specify two edges" }
-                val from = line[0]
-                val to = line[1]
+                val from = line[0] - 1
+                val to = line[1] - 1
                 Edge(Vertex(from), Vertex(to))
             }
 

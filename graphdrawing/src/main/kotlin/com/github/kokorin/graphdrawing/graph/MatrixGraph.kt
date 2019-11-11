@@ -1,40 +1,20 @@
 package com.github.kokorin.graphdrawing.graph
 
-import com.github.kokorin.graphdrawing.draw.Circle
 import com.github.kokorin.graphdrawing.draw.DrawingApi
-import com.github.kokorin.graphdrawing.draw.Point
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 class MatrixGraph(private val matrix: Array<BooleanArray>, private val drawingApi: DrawingApi) : Graph(drawingApi) {
-    override fun drawGraph() {
-        val center = Point(drawingApi.drawingAreaWidth / 2, drawingApi.drawingAreaHeight / 2)
-        val bigR = min(drawingApi.drawingAreaHeight, drawingApi.drawingAreaWidth) / 2 * 0.9
-        val vertexR = sqrt(min(drawingApi.drawingAreaHeight, drawingApi.drawingAreaHeight).toDouble()).toInt()
-
-        val n = matrix.size
-
-        fun getVertexCenter(i: Int): Point {
-            return Point(
-                (center.x + bigR * cos(Math.PI * 2 * i / n)).toInt(),
-                (center.y + bigR * sin(Math.PI * 2 * i / n)).toInt()
-            )
-        }
-
-        for (i in (0 until n)) {
-            drawingApi.drawCircle(Circle(getVertexCenter(i), vertexR))
-        }
-
-        for (i in 0 until n) {
-            for (j in 0 until n) {
+    override fun drawEdges() {
+        for (i in 0 until vertexCount) {
+            for (j in 0 until vertexCount) {
                 if (matrix[i][j]) {
                     drawingApi.drawLine(getVertexCenter(i), getVertexCenter(j))
                 }
             }
         }
     }
+
+    override val vertexCount: Int
+        get() = matrix.size
 
     companion object {
         fun readMatrixGraph(drawingApi: DrawingApi): MatrixGraph {
