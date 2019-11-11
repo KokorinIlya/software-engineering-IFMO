@@ -15,8 +15,8 @@ abstract class Graph(private val drawingApi: DrawingApi) {
 
     protected fun getVertexCenter(i: Int): Point {
         return Point(
-            (centralPoint.x + radius * cos(Math.PI * 2 * i / vertexCount)).toInt(),
-            (centralPoint.y + radius * sin(Math.PI * 2 * i / vertexCount)).toInt()
+            (centralPoint.x + radius * cos(2 * Math.PI * i / vertexCount)).toInt(),
+            (centralPoint.y + radius * sin(2 * Math.PI * i / vertexCount)).toInt()
         )
     }
 

@@ -30,8 +30,8 @@ class AwtApplication : Frame(), DrawingApplication {
             ApplicationParams.drawingAreaParams.width,
             ApplicationParams.drawingAreaParams.height
         )
-        val graphDrawer = GraphDrawer(ApplicationParams.graphType)
-        graphDrawer.readAndDrawGraph(api)
+        val graphDrawer = GraphDrawer(api)
+        graphDrawer.readAndDrawGraph(ApplicationParams.graphType)
         isResizable = false
     }
 }

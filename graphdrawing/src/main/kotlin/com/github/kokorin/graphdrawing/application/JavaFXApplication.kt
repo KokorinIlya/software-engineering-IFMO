@@ -24,8 +24,8 @@ class JavaFXApplication : Application(), DrawingApplication {
             ApplicationParams.drawingAreaParams.width,
             ApplicationParams.drawingAreaParams.height
         )
-        val graphDrawer = GraphDrawer(ApplicationParams.graphType)
-        graphDrawer.readAndDrawGraph(api)
+        val graphDrawer = GraphDrawer(api)
+        graphDrawer.readAndDrawGraph(ApplicationParams.graphType)
         val root = Group()
         root.children.add(canvas)
         primaryStage.scene = Scene(root, Color.WHITE)
