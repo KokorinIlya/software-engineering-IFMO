@@ -18,7 +18,7 @@ class JavaFXApplication : Application(), DrawingApplication {
             ApplicationParams.drawingAreaParams.width.toDouble(),
             ApplicationParams.drawingAreaParams.height.toDouble()
         )
-        val gc = canvas.graphicsContext2D!!
+        val gc = canvas.graphicsContext2D
         val api = JavaFXDrawingApi(
             gc,
             ApplicationParams.drawingAreaParams.width,
