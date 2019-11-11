@@ -35,8 +35,6 @@ class ListGraph(
         for (edge in edges) {
             drawingApi.drawLine(getVertexCenter(edge.from.number), getVertexCenter(edge.to.number))
         }
-
-        drawingApi.show()
     }
 
     companion object {

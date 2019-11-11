@@ -34,8 +34,6 @@ class MatrixGraph(private val matrix: Array<BooleanArray>, private val drawingAp
                 }
             }
         }
-
-        drawingApi.show()
     }
 
     companion object {
