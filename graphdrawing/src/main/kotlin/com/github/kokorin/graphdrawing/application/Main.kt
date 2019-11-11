@@ -12,12 +12,11 @@ fun main(args: Array<String>) {
             else -> throw IllegalArgumentException("Graph type not specified, should be matrix or list")
         }
 
-        val application = when (args[0]) {
+        when (args[0]) {
             "javaFX" -> JavaFXApplication()
             "awt" -> AwtApplication()
             else -> throw IllegalArgumentException("Drawing API not specified, should be javaFX or awt")
-        }
-        application.startApplication()
+        }.startApplication()
     } catch (e: IllegalArgumentException) {
         println("Incorrect usage of program: ${e.message}")
     }
