@@ -1,12 +1,6 @@
 package com.github.kokorin.graphdrawing.graph
 
-import com.github.kokorin.graphdrawing.draw.Circle
 import com.github.kokorin.graphdrawing.draw.DrawingApi
-import com.github.kokorin.graphdrawing.draw.Point
-import kotlin.math.cos
-import kotlin.math.min
-import kotlin.math.sin
-import kotlin.math.sqrt
 
 data class Vertex(val number: Int)
 data class Edge(val from: Vertex, val to: Vertex)
