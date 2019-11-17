@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <head>
+        <title>Todo list</title>
+    </head>
+
+    <body>
+        <h3>Add new todo</h3>
+        <form th:object="${todo}" method="POST" action="/add-todo">
+            <table>
+                <tr>
+                    <td><label>Name:</label></td>
+                    <td>
+                        <label>
+                            <input type="text" th:field="*{name}"/>
+                        </label>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label>Description:</label></td>
+                    <td>
+                        <label>
+                            <input type="text" th:field="*{description}"/>
+                        </label>
+                    </td>
+                </tr>
+            </table>
+
+            <input type="submit" value="add">
+        </form>
+
+        <h3>Todo:</h3>
+        <table>
+            <th:block th:each="todo : ${all_todos}">
+                <tr>
+                    <td th:text="${todo.id}"></td>
+                    <td th:text="${todo.name}"></td>
+                    <td th:text="${todo.description}"></td>
+                    <td th:text="${todo.status}"></td>
+                    <td>
+                        <form method="POST" action="/delete-todo">
+                            <input type="hidden" name="id" th:value="${todo.id}">
+                            <button type="submit">Remove todo</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="/mark-todo-as-done">
+                            <input type="hidden" name="id" th:value="${todo.id}">
+                            <button type="submit">Mark as done</button>
+                        </form>
+                    </td>
+                </tr>
+            </th:block>
+        </table>
+    </body>
+</html>
