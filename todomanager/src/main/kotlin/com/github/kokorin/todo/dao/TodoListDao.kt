@@ -2,14 +2,17 @@ package com.github.kokorin.todo.dao
 
 import com.github.kokorin.todo.model.Todo
 import com.github.kokorin.todo.model.TodoInput
-import java.util.*
+import com.github.kokorin.todo.model.TodoList
+import com.github.kokorin.todo.model.TodoListInput
 
 interface TodoListDao {
-    fun findTodoList(): List<Todo>
+    fun getAllTodos(): Map<TodoList, List<Todo>>
 
-    fun addTodo(entity: TodoInput)
+    fun addTodo(todo: TodoInput)
 
-    fun removeTodo(entityId: Long)
+    fun addTodoList(todoList: TodoListInput)
 
-    fun markTodo(entityId: Long)
+    fun removeTodoList(todoListId: Long)
+
+    fun markTodoAsDone(todoId: Long)
 }
