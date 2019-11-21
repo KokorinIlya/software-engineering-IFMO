@@ -8,7 +8,7 @@ import java.time.Instant
 import kotlin.math.abs
 
 class RPMEventStatisticsTest {
-    private val epsilon = 1e-5;
+    private val epsilon = 1e-5
 
     private fun statsEqual(first: Map<String, Double>, second: Map<String, Double>): Boolean {
         if (first.keys != second.keys) {
