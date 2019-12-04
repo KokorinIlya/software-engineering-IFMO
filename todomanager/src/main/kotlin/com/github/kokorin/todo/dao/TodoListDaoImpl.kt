@@ -22,7 +22,7 @@ class TodoListDaoImpl(
         }
     }
 
-    override fun getAllTodos(): Map<TodoList, List<Todo>> {
+    override fun getAllTodos(): List<Pair<TodoList, List<Todo>>> {
         val aggregator = mutableMapOf<TodoList, MutableList<Todo>>()
         connectionProvider.getConnection().use { connection ->
             connection.createStatement().use { statement ->
@@ -68,7 +68,7 @@ class TodoListDaoImpl(
         }
         return aggregator.toMap().mapValues {
             it.value.toList().sortedBy { todo -> todo.id }
-        }
+        }.toList().sortedBy { it.first.id }
     }
 
     override fun addTodo(todo: TodoInput) {

@@ -64,23 +64,23 @@
 
         <h3>Todo:</h3>
         <ul>
-            <th:block th:each="todoList : ${all_todos.entrySet()}">
+            <th:block th:each="todoList : ${all_todos}">
                 <li>
                     <table>
                         <tr>
-                            <td th:text="${todoList.getKey().id}"></td>
-                            <td th:text="${todoList.getKey().name}"></td>
-                            <td th:text="${todoList.getKey().description}"></td>
+                            <td th:text="${todoList.first.id}"></td>
+                            <td th:text="${todoList.first.name}"></td>
+                            <td th:text="${todoList.first.description}"></td>
                             <td>
                                 <form method="POST" action="/delete-todo-list">
-                                    <input type="hidden" name="id" th:value="${todoList.getKey().id}">
+                                    <input type="hidden" name="id" th:value="${todoList.first.id}">
                                     <button type="submit">Remove todo list</button>
                                 </form>
                             </td>
                         </tr>
                     </table>
                     <ul>
-                        <th:block th:each="todo : ${todoList.value}">
+                        <th:block th:each="todo : ${todoList.second}">
                         <li>
                             <table>
                                 <tr>

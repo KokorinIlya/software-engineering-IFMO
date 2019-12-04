@@ -6,7 +6,7 @@ import com.github.kokorin.todo.model.TodoList
 import com.github.kokorin.todo.model.TodoListInput
 
 interface TodoListDao {
-    fun getAllTodos(): Map<TodoList, List<Todo>>
+    fun getAllTodos(): List<Pair<TodoList, List<Todo>>>
 
     fun addTodo(todo: TodoInput)
 
