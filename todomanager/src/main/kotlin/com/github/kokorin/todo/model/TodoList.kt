@@ -1,7 +1,7 @@
 package com.github.kokorin.todo.model
 
 data class TodoList(
-    val id: Long,
+    val id: Int,
     val name: String,
     val description: String
 ) {

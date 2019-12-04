@@ -21,7 +21,7 @@ class TodoListController(private val dao: TodoListDao) {
     fun addTodo(
         @RequestParam("new_todo_name") todoName: String,
         @RequestParam("new_todo_description") todoDescription: String,
-        @RequestParam("new_todo_listId") todoListId: Long
+        @RequestParam("new_todo_listId") todoListId: Int
     ): String {
         dao.addTodo(todoName, todoDescription, todoListId)
         return "redirect:/all-todos"
@@ -37,13 +37,13 @@ class TodoListController(private val dao: TodoListDao) {
     }
 
     @PostMapping("/delete-todo-list")
-    fun removeTodoList(@RequestParam("id") todoListId: Long): String {
+    fun removeTodoList(@RequestParam("id") todoListId: Int): String {
         dao.removeTodoList(todoListId)
         return "redirect:/all-todos"
     }
 
     @PostMapping("/mark-todo-as-done")
-    fun markTodo(@RequestParam("id") todoId: Long): String {
+    fun markTodo(@RequestParam("id") todoId: Int): String {
         dao.markTodoAsDone(todoId)
         return "redirect:/all-todos"
     }

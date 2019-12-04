@@ -28,7 +28,7 @@ class TodoListDaoImpl(
             connection.createStatement().use { statement ->
                 statement.executeQuery(sqlHolder.getAll).use { resultSet ->
                     while (resultSet.next()) {
-                        val listId = resultSet.getLong("list_id")
+                        val listId = resultSet.getInt("list_id")
                         val listName = resultSet.getString("list_name")
                         val listDescription = resultSet.getString("list_description")
 
@@ -39,7 +39,7 @@ class TodoListDaoImpl(
                         )
 
                         if (resultSet.getObject("todo_id") != null) {
-                            val todoId = resultSet.getLong("todo_id")
+                            val todoId = resultSet.getInt("todo_id")
                             val todoName = resultSet.getString("todo_name")
                             val todoDescription = resultSet.getString("todo_description")
                             val todoStatus = if (resultSet.getBoolean("is_done")) {
@@ -71,30 +71,30 @@ class TodoListDaoImpl(
         }.toList().sortedBy { it.first.id }
     }
 
-    override fun addTodo(name: String, description: String, listId: Long) {
+    override fun addTodo(name: String, description: String, listId: Int) {
         connectionProvider.getConnection().use { connection ->
             connection.prepareStatement(sqlHolder.insertNewTodo).use { statement ->
                 statement.setString(1, name)
                 statement.setString(2, description)
-                statement.setInt(3, listId.toInt())
+                statement.setInt(3, listId)
                 statement.executeQuery()
             }
         }
     }
 
-    override fun removeTodoList(todoListId: Long) {
+    override fun removeTodoList(todoListId: Int) {
         connectionProvider.getConnection().use { connection ->
             connection.prepareStatement(sqlHolder.deleteTodoList).use { statement ->
-                statement.setLong(1, todoListId)
+                statement.setInt(1, todoListId)
                 statement.executeUpdate()
             }
         }
     }
 
-    override fun markTodoAsDone(todoId: Long) {
+    override fun markTodoAsDone(todoId: Int) {
         connectionProvider.getConnection().use { connection ->
             connection.prepareStatement(sqlHolder.markAsDone).use { statement ->
-                statement.setLong(1, todoId)
+                statement.setInt(1, todoId)
                 statement.executeUpdate()
             }
         }
