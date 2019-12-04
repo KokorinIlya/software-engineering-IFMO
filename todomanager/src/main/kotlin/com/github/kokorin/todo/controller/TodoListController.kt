@@ -1,10 +1,6 @@
 package com.github.kokorin.todo.controller
 
 import com.github.kokorin.todo.dao.TodoListDao
-import com.github.kokorin.todo.model.TodoInput
-import com.github.kokorin.todo.model.TodoListInput
-import com.github.kokorin.todo.model.TodoListOutput
-import com.github.kokorin.todo.model.TodoOutput
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
 import org.springframework.web.bind.annotation.GetMapping
@@ -18,20 +14,25 @@ class TodoListController(private val dao: TodoListDao) {
     @GetMapping("/all-todos")
     fun getTodoList(model: Model): String {
         model.addAttribute("all_todos", dao.getAllTodos())
-        model.addAttribute("todo_list", TodoListOutput())
-        model.addAttribute("todo", TodoOutput())
         return "all_todos"
     }
 
     @PostMapping("/add-todo")
-    fun addTodo(@ModelAttribute("todo") todo: TodoInput): String {
-        dao.addTodo(todo)
+    fun addTodo(
+        @RequestParam("new_todo_name") todoName: String,
+        @RequestParam("new_todo_description") todoDescription: String,
+        @RequestParam("new_todo_listId") todoListId: Long
+    ): String {
+        dao.addTodo(todoName, todoDescription, todoListId)
         return "redirect:/all-todos"
     }
 
     @PostMapping("/add-todo-list")
-    fun addTodoList(@ModelAttribute("todo_list") todoList: TodoListInput): String {
-        dao.addTodoList(todoList)
+    fun addTodoList(
+        @ModelAttribute("name") todoListName: String,
+        @ModelAttribute("description") todoListDescription: String
+    ): String {
+        dao.addTodoList(todoListName, todoListDescription)
         return "redirect:/all-todos"
     }
 

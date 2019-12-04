@@ -6,46 +6,14 @@
     </head>
 
     <body>
-        <h3>Add new todo</h3>
-        <form th:object="${todo}" method="POST" action="/add-todo">
-            <table>
-                <tr>
-                    <td><label>Name:</label></td>
-                    <td>
-                        <label>
-                            <input type="text" th:field="*{name}"/>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Description:</label></td>
-                    <td>
-                        <label>
-                            <input type="text" th:field="*{description}"/>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Todo list id:</label></td>
-                    <td>
-                        <label>
-                            <input type="text" th:field="*{listId}"/>
-                        </label>
-                    </td>
-                </tr>
-            </table>
-
-            <input type="submit" value="add">
-        </form>
-
         <h3>Add new todo list</h3>
-        <form th:object="${todo_list}" method="POST" action="/add-todo-list">
+        <form method="POST" action="/add-todo-list">
             <table>
                 <tr>
                     <td><label>Name:</label></td>
                     <td>
                         <label>
-                            <input type="text" th:field="*{name}"/>
+                            <input type="text" name="name"/>
                         </label>
                     </td>
                 </tr>
@@ -53,7 +21,7 @@
                     <td><label>Description:</label></td>
                     <td>
                         <label>
-                            <input type="text" th:field="*{description}"/>
+                            <input type="text" name="description"/>
                         </label>
                     </td>
                 </tr>
@@ -68,7 +36,6 @@
                 <li>
                     <table>
                         <tr>
-                            <td th:text="${todoList.first.id}"></td>
                             <td th:text="${todoList.first.name}"></td>
                             <td th:text="${todoList.first.description}"></td>
                             <td>
@@ -84,7 +51,6 @@
                         <li>
                             <table>
                                 <tr>
-                                    <td th:text="${todo.id}"></td>
                                     <td th:text="${todo.name}"></td>
                                     <td th:text="${todo.description}"></td>
                                     <td th:text="${todo.status}"></td>
@@ -100,6 +66,36 @@
                         </th:block>
                     </ul>
                 </li>
+
+                <h4>Add new todo</h4>
+                <form method="POST" action="/add-todo">
+                    <table>
+                        <tr>
+                            <td><label>Name:</label></td>
+                            <td>
+                                <label>
+                                    <input type="text" name="new_todo_name"/>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label>Description:</label></td>
+                            <td>
+                                <label>
+                                    <input type="text" name="new_todo_description"/>
+                                </label>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <input type="hidden" name="new_todo_listId" th:value="${todoList.first.id}">
+
+                    <input type="submit" value="add">
+                </form>
+
+                <br>
+                <br>
+                <br>
             </th:block>
         </ul>
     </body>

@@ -71,12 +71,12 @@ class TodoListDaoImpl(
         }.toList().sortedBy { it.first.id }
     }
 
-    override fun addTodo(todo: TodoInput) {
+    override fun addTodo(name: String, description: String, listId: Long) {
         connectionProvider.getConnection().use { connection ->
             connection.prepareStatement(sqlHolder.insertNewTodo).use { statement ->
-                statement.setString(1, todo.name)
-                statement.setString(2, todo.description)
-                statement.setInt(3, todo.listId.toInt())
+                statement.setString(1, name)
+                statement.setString(2, description)
+                statement.setInt(3, listId.toInt())
                 statement.executeQuery()
             }
         }
@@ -100,11 +100,11 @@ class TodoListDaoImpl(
         }
     }
 
-    override fun addTodoList(todoList: TodoListInput) {
+    override fun addTodoList(todoListName: String, todoListDescription: String) {
         connectionProvider.getConnection().use { connection ->
             connection.prepareStatement(sqlHolder.insertNewTodoList).use { statement ->
-                statement.setString(1, todoList.name)
-                statement.setString(2, todoList.description)
+                statement.setString(1, todoListName)
+                statement.setString(2, todoListDescription)
                 statement.executeQuery()
             }
         }
