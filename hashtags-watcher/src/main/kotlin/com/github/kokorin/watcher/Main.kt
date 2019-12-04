@@ -30,9 +30,11 @@ fun main(args: Array<String>) = runBlocking {
     val log = LoggerFactory.getLogger("com.github.kokorin.watcher.main-logger")
     log.info("Application started")
 
-    val vkConfig = VkConfigImpl(
-        ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("vk")
-    )
+    val mainConfig = ConfigFactory.parseFile(File("src/main/resources/application.conf"))
+    val vkConfig = VkConfigImpl(mainConfig.getConfig("vk"))
+    val watcherActorConfig = ActorConfigImpl(mainConfig.getConfig("watcher-actor"))
+    val searchActorConfig = ActorConfigImpl(mainConfig.getConfig("search-actor"))
+
     val vkClient = AsyncVkClientImpl(
         RPSLimitHttpClient(
             AsyncHttpClientImpl(HttpClient()),
@@ -41,12 +43,6 @@ fun main(args: Array<String>) = runBlocking {
         vkConfig
     )
 
-    val watcherActorConfig = ActorConfigImpl(
-        ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("watcher-actor")
-    )
-    val searchActorConfig = ActorConfigImpl(
-        ConfigFactory.parseFile(File("src/main/resources/application.conf")).getConfig("search-actor")
-    )
     val curDate = Date()
     val timeConverter = TimeConverter(curDate)
     val hashTagWatcher = VkHashTagWatcherActor(vkClient, timeConverter, hashTag, watcherActorConfig, searchActorConfig)

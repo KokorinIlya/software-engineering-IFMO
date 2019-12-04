@@ -6,6 +6,8 @@ import org.springframework.stereotype.Component
 interface SqlHolder {
     val createTodoListTable: String
     val createTodoTable: String
+    val createNextIdsTable: String
+    val fillNextIdsTable: String
     val getAll: String
     val insertNewTodoList: String
     val insertNewTodo: String
@@ -17,6 +19,8 @@ interface SqlHolder {
 class SqlHolderImpl(pathToSql: PathToSql) : SqlHolder {
     private val path = pathToSql.path
     override val createTodoListTable = readFileAsString(path.resolve("create_todo_list_table.sql"))
+    override val createNextIdsTable = readFileAsString(path.resolve("create_next_ids_table.sql"))
+    override val fillNextIdsTable = readFileAsString(path.resolve("fill_next_ids_table.sql"))
     override val insertNewTodoList = readFileAsString(path.resolve("insert_todo_list.sql"))
     override val createTodoTable = readFileAsString(path.resolve("create_todo_table.sql"))
     override val getAll = readFileAsString(path.resolve("get_all_todo.sql"))

@@ -1,2 +1,2 @@
-INSERT INTO Todo (todo_name, todo_description, todo_status, list_id)
-VALUES (?, ?, ?, ?);
+SELECT *
+FROM insert_new_todo(?, ?, ?);

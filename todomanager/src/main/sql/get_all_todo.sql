@@ -4,6 +4,6 @@ SELECT TodoList.list_id,
        Todo.todo_id,
        Todo.todo_name,
        Todo.todo_description,
-       Todo.todo_status
+       Todo.is_done
 FROM TodoList
          LEFT OUTER JOIN Todo ON TodoList.list_id = Todo.list_id;

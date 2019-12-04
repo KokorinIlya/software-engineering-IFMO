@@ -22,9 +22,7 @@ class RPMEventStatistics(private val clock: Clock) : EventStatistics {
     private fun removeOldEvents(requestTime: Instant) {
         while (eventsQueue.size > 0 && lastEventShouldBeRemoved(requestTime)) {
             val (name, _) = eventsQueue.poll()
-            val curEventCount = eventsCount.getOrElse(name) {
-                throw AssertionError("Invariant failed")
-            }
+            val curEventCount = eventsCount[name]!!
             if (curEventCount >= 2) {
                 eventsCount[name] = curEventCount - 1
             } else {

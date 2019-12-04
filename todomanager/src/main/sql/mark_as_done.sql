@@ -1,3 +1,3 @@
 UPDATE Todo
-SET todo_status = 1
+SET is_done = TRUE
 WHERE Todo.todo_id = ?;
