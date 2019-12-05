@@ -1,5 +1,6 @@
 package com.github.kokorin.todo.connection
 
+import com.github.kokorin.todo.config.DatabaseConfigProvider
 import org.springframework.stereotype.Component
 import java.sql.Connection
 import java.sql.DriverManager

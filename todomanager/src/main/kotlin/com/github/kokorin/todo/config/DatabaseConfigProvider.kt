@@ -1,6 +1,5 @@
-package com.github.kokorin.todo.connection
+package com.github.kokorin.todo.config
 
-import com.github.kokorin.todo.config.ConfigProvider
 import org.springframework.stereotype.Component
 
 interface DatabaseConfigProvider {
@@ -8,7 +7,8 @@ interface DatabaseConfigProvider {
 }
 
 @Component
-class DatabaseConfigProviderImpl(private val configProvider: ConfigProvider) : DatabaseConfigProvider {
+class DatabaseConfigProviderImpl(configProvider: ConfigProvider) :
+    DatabaseConfigProvider {
     private val databaseConfig = configProvider.config.getConfig("database")
     private val host = databaseConfig.getString("host")
     private val port = databaseConfig.getInt("port")
