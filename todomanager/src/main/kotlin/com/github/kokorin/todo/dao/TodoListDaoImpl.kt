@@ -1,9 +1,12 @@
 package com.github.kokorin.todo.dao
 
 import com.github.kokorin.todo.connection.ConnectionProvider
-import com.github.kokorin.todo.model.*
+import com.github.kokorin.todo.model.Todo
+import com.github.kokorin.todo.model.TodoList
+import com.github.kokorin.todo.model.TodoStatus
 import com.github.kokorin.todo.sql.SqlHolder
 import org.springframework.stereotype.Component
+import java.sql.Connection
 
 
 @Component
@@ -18,6 +21,8 @@ class TodoListDaoImpl(
                 statement.executeUpdate(sqlHolder.createTodoTable)
                 statement.executeUpdate(sqlHolder.createNextIdsTable)
                 statement.executeUpdate(sqlHolder.fillNextIdsTable)
+                statement.executeUpdate(sqlHolder.createInsertTodoFun)
+                statement.executeUpdate(sqlHolder.createInsertTodoListFun)
             }
         }
     }
@@ -73,6 +78,7 @@ class TodoListDaoImpl(
 
     override fun addTodo(name: String, description: String, listId: Int) {
         connectionProvider.getConnection().use { connection ->
+            connection.transactionIsolation = Connection.TRANSACTION_SERIALIZABLE
             connection.prepareStatement(sqlHolder.insertNewTodo).use { statement ->
                 statement.setString(1, name)
                 statement.setString(2, description)
@@ -102,6 +108,7 @@ class TodoListDaoImpl(
 
     override fun addTodoList(todoListName: String, todoListDescription: String) {
         connectionProvider.getConnection().use { connection ->
+            connection.transactionIsolation = Connection.TRANSACTION_SERIALIZABLE
             connection.prepareStatement(sqlHolder.insertNewTodoList).use { statement ->
                 statement.setString(1, todoListName)
                 statement.setString(2, todoListDescription)

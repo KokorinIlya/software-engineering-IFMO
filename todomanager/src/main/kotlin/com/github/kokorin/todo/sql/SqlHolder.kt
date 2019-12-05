@@ -8,6 +8,8 @@ interface SqlHolder {
     val createTodoTable: String
     val createNextIdsTable: String
     val fillNextIdsTable: String
+    val createInsertTodoFun: String
+    val createInsertTodoListFun: String
     val getAll: String
     val insertNewTodoList: String
     val insertNewTodo: String
@@ -27,4 +29,6 @@ class SqlHolderImpl(pathToSql: PathToSql) : SqlHolder {
     override val insertNewTodo = readFileAsString(path.resolve("insert_todo.sql"))
     override val deleteTodoList = readFileAsString(path.resolve("delete_todo_list.sql"))
     override val markAsDone = readFileAsString(path.resolve("mark_as_done.sql"))
+    override val createInsertTodoFun = readFileAsString(path.resolve("insert_todo_func.sql"))
+    override val createInsertTodoListFun = readFileAsString(path.resolve("insert_todo_list_func.sql"))
 }
