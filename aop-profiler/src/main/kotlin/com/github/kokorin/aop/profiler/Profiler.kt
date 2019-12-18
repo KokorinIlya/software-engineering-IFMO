@@ -34,12 +34,13 @@ object Profiler {
 
     fun registerMethodExit(methodRef: MethodRef) {
         val finishTime = clock.now()
-        val lastCall = callsStack.get().pollFirst()
+        val (lastCalledMethod, callTime) = callsStack.get().pollFirst()
                 ?: throw IllegalStateException("Method $methodRef finished without being called")
-        if (lastCall.first.methodRef != methodRef) {
-            throw IllegalStateException("Method ${lastCall.first} was called, but method $methodRef finished")
+        if (lastCalledMethod.methodRef != methodRef) {
+            throw IllegalStateException("Method ${lastCalledMethod.methodRef} was called, " +
+                    "but method $methodRef finished")
         }
-        val methodDuration = Duration.between(lastCall.second, finishTime)
+        val methodDuration = Duration.between(callTime, finishTime)
         stats.get().compute(methodRef) { _, methodStats ->
             if (methodStats == null) {
                 MethodStats(methodDuration, 1)
@@ -51,12 +52,12 @@ object Profiler {
         val completedMethod = CompletedMethodCall(
                 methodRef,
                 methodDuration,
-                lastCall.first.InnerCalls.toList()
+                lastCalledMethod.InnerCalls.toList()
         )
         if (callsStack.get().size == 0) {
             callRoots.get().add(completedMethod)
         } else {
-            val parentMethod = callsStack.get().peekFirst().first
+            val (parentMethod, _) = callsStack.get().peekFirst()
             parentMethod.InnerCalls.add(completedMethod)
         }
     }

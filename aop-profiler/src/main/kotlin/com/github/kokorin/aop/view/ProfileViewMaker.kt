@@ -11,12 +11,16 @@ class ProfileViewMaker(private val gson: Gson) {
     }
 
     fun showStats(stats: Map<MethodRef, MethodStats>): String {
-        return stats.map {
-            val averageTime = it.value.summaryTime.dividedBy(it.value.callsNumber.toLong())
-            "${it.key.className}::${it.key.methodName}\n" +
-                    "Number of calls: ${it.value.callsNumber}\n" +
-                    "Total time spent: ${it.value.summaryTime.toMillis()} milliseconds\n" +
-                    "Average time per call: ${averageTime.toMillis()} milliseconds"
-        }.joinToString(separator = ";\n\n")
+        return stats
+                .toList()
+                .sortedBy { it.second.summaryTime }
+                .reversed()
+                .joinToString(separator = ";\n\n", postfix = ";\n\n") { (method, stats) ->
+                    val averageTime = stats.summaryTime.dividedBy(stats.callsNumber.toLong())
+                    "${method.className}::${method.methodName}\n" +
+                            "Number of calls: ${stats.callsNumber}\n" +
+                            "Total time spent: ${stats.summaryTime.toMillis()} milliseconds\n" +
+                            "Average time per call: ${averageTime.toMillis()} milliseconds"
+                }
     }
 }
