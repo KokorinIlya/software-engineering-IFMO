@@ -1,7 +1,6 @@
-package com.github.kokorin.aop.profile;
+package com.github.kokorin.aop.profiler;
 
 import com.github.kokorin.aop.model.MethodRef;
-import com.github.kokorin.aop.profiler.Profiler;
 
 public aspect ProfilerAspect {
     pointcut methodCall(): call (* com.github.kokorin.aop.demo.*.*(..));
