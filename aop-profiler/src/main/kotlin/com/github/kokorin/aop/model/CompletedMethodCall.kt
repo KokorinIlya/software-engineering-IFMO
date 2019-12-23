@@ -4,4 +4,4 @@ import java.time.Duration
 
 data class CompletedMethodCall(val methodRef: MethodRef,
                                val callDuration: Duration,
-                               val InnerCalls: List<CompletedMethodCall>)
+                               val innerCalls: List<CompletedMethodCall>)

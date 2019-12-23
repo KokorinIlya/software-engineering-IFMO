@@ -79,4 +79,10 @@ object Profiler {
     fun getStats(): Map<MethodRef, MethodStats> = stats.get().toMap()
 
     fun getCallTree(): List<CompletedMethodCall> = callRoots.get().toList()
+
+    fun clear() {
+        callRoots.get().clear()
+        callsStack.get().clear()
+        stats.get().clear()
+    }
 }
