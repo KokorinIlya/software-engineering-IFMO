@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 public class Main {
     public static void main(String[] args) throws InterruptedException {
         Profiler.INSTANCE.setClock(new RealTimeClock());
+        Profiler.INSTANCE.setPackageName("com.github.kokorin.aop.demo");
 
         Demo demo = new Demo();
         demo.f();

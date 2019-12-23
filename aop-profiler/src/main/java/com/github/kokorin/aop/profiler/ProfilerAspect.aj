@@ -3,7 +3,9 @@ package com.github.kokorin.aop.profiler;
 import com.github.kokorin.aop.model.MethodRef;
 
 public aspect ProfilerAspect {
-    pointcut methodCall(): call (* com.github.kokorin.aop.demo.*.*(..));
+    pointcut methodCall(): call (* *.*(..)) &&
+            !within(com.github.kokorin.aop.profiler.Profiler) &&
+            !within(com.github.kokorin.aop.profiler.ProfilerAspect);
 
     before(): methodCall() {
         Profiler.INSTANCE.registerMethodCall(

@@ -23,16 +23,30 @@ object Profiler {
         mutableListOf<CompletedMethodCall>()
     }
 
+    private val packageName: ThreadLocal<String?> = ThreadLocal.withInitial { null }
+
+    fun setPackageName(name: String) {
+        packageName.set(name)
+    }
+
     @Volatile
     lateinit var clock: Clock
 
     fun registerMethodCall(methodRef: MethodRef) {
+        val curPackageName = packageName.get()
+        if (curPackageName == null || !methodRef.className.startsWith(curPackageName)) {
+            return
+        }
         val startTime = clock.now()
         val methodCall = MethodCallInProgress(methodRef, mutableListOf())
         callsStack.get().addFirst(Pair(methodCall, startTime))
     }
 
     fun registerMethodExit(methodRef: MethodRef) {
+        val curPackageName = packageName.get()
+        if (curPackageName == null || !methodRef.className.startsWith(curPackageName)) {
+            return
+        }
         val finishTime = clock.now()
         val (lastCalledMethod, callTime) = callsStack.get().pollFirst()
                 ?: throw IllegalStateException("Method $methodRef finished without being called")
