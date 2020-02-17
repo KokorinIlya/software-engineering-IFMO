@@ -22,6 +22,8 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
                       searcherActorConfig: SearcherActorConfig)
     extends Actor
     with StrictLogging {
+
+  // TODO: functional style
   var response: scala.collection.mutable.Map[String, SearchEngineResponse] =
     scala.collection.mutable.Map.empty
 
@@ -34,12 +36,12 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
       for { curEngine <- engines } {
         val curSearchActor =
           context.actorOf(Props(classOf[SearcherActor], searcherActorConfig))
-        curSearchActor ! SearcherActor.SearchRequestMessage(query, curEngine)
+        curSearchActor ! SearcherActor.RequestToSearchEngineMessage(query, curEngine)
       }
       sizeToWait = engines.size
       stopMessageSender =
         context.system.scheduler.scheduleOnce(aggregatorActorConfig.timeout) {
-          self ! StopActorMessage
+          self ! TimeoutMessage
         }
       context.become(awaitingResponses)
   }
@@ -50,7 +52,7 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
   }
 
   private def awaitingResponses: Receive = {
-    case StopActorMessage =>
+    case TimeoutMessage =>
       stopActor()
     case SearcherResponseMessage(engineName, engineResponse) =>
       response(engineName) = engineResponse
@@ -74,5 +76,5 @@ object AggregatorActor {
                                      response: SearchEngineResponse)
       extends AggregatorActorMessage
 
-  case object StopActorMessage
+  case object TimeoutMessage extends AggregatorActorMessage
 }

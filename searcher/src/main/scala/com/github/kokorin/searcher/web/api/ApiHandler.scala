@@ -10,10 +10,7 @@ import com.github.kokorin.searcher.web.Handler
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Promise}
 import ApiHandler.{Formats, SearchAggregatorActorSystem, ThreadPool}
 import com.github.kokorin.searcher.actors.AggregatorActor
-import com.github.kokorin.searcher.config.{
-  ApplicationConfig,
-  SearchEngineConfig
-}
+import com.github.kokorin.searcher.config.ApplicationConfig
 import com.github.kokorin.searcher.model.AggregatedSearchResponse
 import org.json4s._
 import org.json4s.native.Serialization

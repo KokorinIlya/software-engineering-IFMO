@@ -15,11 +15,15 @@ class EngineHandler(engineName: String) extends Handler {
   override def route: Route = (get & path("search") & parameter('query)) {
     query =>
       val prettifiedQuery = WhitespacePattern.matcher(query).replaceAll("_")
-      val urls = (1 to 5).map { number =>
-        s"host_number_$number.ru/did_you_know_about_$prettifiedQuery/from_$engineName"
+      if (prettifiedQuery == s"${engineName}_is_bad_search_engine") {
+        reject()
+      } else {
+        val urls = (1 to 5).map { number =>
+          s"host_number_$number.ru/did_you_know_about_$prettifiedQuery/from_$engineName"
+        }
+        val answer = SearchEngineResponse(status = 200, urls = urls)
+        complete(write(answer))
       }
-      val answer = SearchEngineResponse(status = 200, urls = urls)
-      complete(write(answer))
   }
 }
 
