@@ -17,15 +17,14 @@ import org.json4s.native.Serialization
 import org.json4s.native.Serialization.write
 
 class ApiHandler(applicationConfig: ApplicationConfig) extends Handler {
-  private def pingRoute: Route = (path("search") & get & parameter("query")) {
+  private def pingRoute: Route = (path("search") & get & parameter('query)) {
     query =>
       val promise: Promise[AggregatedSearchResponse] = Promise()
       val actor = SearchAggregatorActorSystem.actorOf(
         Props(
           classOf[AggregatorActor],
           promise,
-          applicationConfig.aggregatorActorConfig,
-          applicationConfig.searcherActorConfig
+          applicationConfig.aggregatorActorConfig
         )
       )
       actor ! AggregatorActor

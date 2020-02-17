@@ -5,8 +5,7 @@ import java.util.concurrent.Executors
 import akka.actor.{Actor, Cancellable, Props}
 import com.github.kokorin.searcher.config.{
   AggregatorActorConfig,
-  SearchEngineConfig,
-  SearcherActorConfig
+  SearchEngineConfig
 }
 import com.github.kokorin.searcher.model.{
   AggregatedSearchResponse,
@@ -18,12 +17,10 @@ import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Promise}
 import AggregatorActor._
 
 class AggregatorActor(promise: Promise[AggregatedSearchResponse],
-                      aggregatorActorConfig: AggregatorActorConfig,
-                      searcherActorConfig: SearcherActorConfig)
+                      aggregatorActorConfig: AggregatorActorConfig)
     extends Actor
     with StrictLogging {
 
-  // TODO: functional style
   var response: scala.collection.mutable.Map[String, SearchEngineResponse] =
     scala.collection.mutable.Map.empty
 
@@ -35,8 +32,11 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
     case SearchQueryMessage(query, engines) =>
       for { curEngine <- engines } {
         val curSearchActor =
-          context.actorOf(Props(classOf[SearcherActor], searcherActorConfig))
-        curSearchActor ! SearcherActor.RequestToSearchEngineMessage(query, curEngine)
+          context.actorOf(Props(classOf[SearcherActor]))
+        curSearchActor ! SearcherActor.RequestToSearchEngineMessage(
+          query,
+          curEngine
+        )
       }
       sizeToWait = engines.size
       stopMessageSender =
@@ -46,19 +46,18 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
       context.become(awaitingResponses)
   }
 
-  private def stopActor(): Unit = {
+  override def postStop(): Unit = {
     promise.success(AggregatedSearchResponse(response.toMap))
-    context.stop(self)
   }
 
   private def awaitingResponses: Receive = {
     case TimeoutMessage =>
-      stopActor()
+      context.stop(self)
     case SearcherResponseMessage(engineName, engineResponse) =>
       response(engineName) = engineResponse
       if (response.size == sizeToWait) {
         stopMessageSender.cancel()
-        stopActor()
+        context.stop(self)
       }
   }
 }

@@ -7,7 +7,6 @@ trait ApplicationConfig {
   val apiConfig: ApiConfig
   val searchEngines: Seq[SearchEngineConfig]
   val aggregatorActorConfig: AggregatorActorConfig
-  val searcherActorConfig: SearcherActorConfig
 }
 
 class ApplicationConfigImpl(conf: Config) extends ApplicationConfig {
@@ -20,11 +19,8 @@ class ApplicationConfigImpl(conf: Config) extends ApplicationConfig {
     }
   }
 
-  private val actorsConfig = conf.getConfig("actors")
-
   override val aggregatorActorConfig: AggregatorActorConfig =
-    new AggregatorActorConfigImpl(actorsConfig.getConfig("aggregator"))
-
-  override val searcherActorConfig: SearcherActorConfig =
-    new SearcherActorConfigImpl(actorsConfig.getConfig("searcher"))
+    new AggregatorActorConfigImpl(
+      conf.getConfig("actors").getConfig("aggregator")
+    )
 }
