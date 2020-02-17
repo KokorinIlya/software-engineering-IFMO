@@ -1,7 +1,6 @@
 package com.github.kokorin.searcher
 
 import com.typesafe.config.ConfigFactory
-import java.io.File
 import java.nio.file.Paths
 
 import com.github.kokorin.searcher.config.ApplicationConfigImpl

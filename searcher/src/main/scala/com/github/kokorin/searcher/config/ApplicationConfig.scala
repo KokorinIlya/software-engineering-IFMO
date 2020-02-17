@@ -1,20 +1,30 @@
 package com.github.kokorin.searcher.config
 
-import com.github.kokorin.searcher.engines.EnginesListProvider
 import com.typesafe.config.Config
+import scala.collection.JavaConverters._
 
 trait ApplicationConfig {
-  def apiConfig: ApiConfig
-  def searchEngines: Seq[SearchEngineConfig]
+  val apiConfig: ApiConfig
+  val searchEngines: Seq[SearchEngineConfig]
+  val aggregatorActorConfig: AggregatorActorConfig
+  val searcherActorConfig: SearcherActorConfig
 }
 
 class ApplicationConfigImpl(conf: Config) extends ApplicationConfig {
-  override def apiConfig: ApiConfig = new ApiConfigImpl(conf.getConfig("api"))
+  override val apiConfig: ApiConfig = new ApiConfigImpl(conf.getConfig("api"))
 
-  override def searchEngines: Seq[SearchEngineConfig] = {
+  override val searchEngines: Seq[SearchEngineConfig] = {
     val enginesConfig = conf.getConfig("searchEngines")
-    EnginesListProvider.getEngineNames.map { name =>
-      new SearchEngineConfigImpl(enginesConfig.getConfig(name))
+    enginesConfig.getStringList("enginesList").asScala.map { name =>
+      new SearchEngineConfigImpl(enginesConfig.getConfig(name), name)
     }
   }
+
+  private val actorsConfig = conf.getConfig("actors")
+
+  override val aggregatorActorConfig: AggregatorActorConfig =
+    new AggregatorActorConfigImpl(actorsConfig.getConfig("aggregator"))
+
+  override val searcherActorConfig: SearcherActorConfig =
+    new SearcherActorConfigImpl(actorsConfig.getConfig("searcher"))
 }

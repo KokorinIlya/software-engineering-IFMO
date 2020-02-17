@@ -1,10 +1,10 @@
 package com.github.kokorin.searcher.utils
 
 import java.time.{Duration => JavaDuration}
-import scala.concurrent.duration.{Duration => ScalaDuration}
+import scala.concurrent.duration.{Duration => ScalaDuration, FiniteDuration}
 
 object DurationUtils {
-  implicit class RichJavaDuration(duration: JavaDuration) {
-    def asScala: ScalaDuration = ScalaDuration.fromNanos(duration.getNano)
+  implicit class RichJavaDuration(val duration: JavaDuration) extends AnyVal {
+    def asScala: FiniteDuration = ScalaDuration.fromNanos(duration.toNanos)
   }
 }

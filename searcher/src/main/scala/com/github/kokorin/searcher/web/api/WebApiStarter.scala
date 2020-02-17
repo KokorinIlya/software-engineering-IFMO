@@ -34,7 +34,8 @@ class WebApiStarter(actorSystemName: String,
         } match {
           case Failure(exception) =>
             logger.error("Error while unbinding API", exception)
-          case Success(_) => logger.info("Successfully API unbinding")
+          case Success(_) =>
+            logger.info("Successfully API unbinding")
         }
         system.terminate()
       }

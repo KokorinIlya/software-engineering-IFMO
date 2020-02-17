@@ -2,30 +2,24 @@ package com.github.kokorin.searcher.actors
 
 import java.util.concurrent.Executors
 
-import akka.actor.{Actor, Props}
-import com.github.kokorin.searcher.config.SearchEngineConfig
+import akka.actor.{Actor, Cancellable, Props}
+import com.github.kokorin.searcher.config.{
+  AggregatorActorConfig,
+  SearchEngineConfig,
+  SearcherActorConfig
+}
 import com.github.kokorin.searcher.model.{
   AggregatedSearchResponse,
   SearchEngineResponse
 }
 import com.typesafe.scalalogging.StrictLogging
 
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Promise}
-import AggregatorActor.ThreadPool
+import AggregatorActor._
 
-sealed trait AggregatorActorMessage
-
-case class SearchQueryMessage(query: String, engines: Seq[SearchEngineConfig])
-    extends AggregatorActorMessage
-
-case class SearcherResponseMessage(engineName: String,
-                                   response: SearchEngineResponse)
-    extends AggregatorActorMessage
-
-case object StopActorMessage
-
-class AggregatorActor(promise: Promise[AggregatedSearchResponse])
+class AggregatorActor(promise: Promise[AggregatedSearchResponse],
+                      aggregatorActorConfig: AggregatorActorConfig,
+                      searcherActorConfig: SearcherActorConfig)
     extends Actor
     with StrictLogging {
   var response: scala.collection.mutable.Map[String, SearchEngineResponse] =
@@ -33,18 +27,20 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse])
 
   var sizeToWait: Int = -1
 
+  var stopMessageSender: Cancellable = _
+
   override def receive: Receive = {
     case SearchQueryMessage(query, engines) =>
       for { curEngine <- engines } {
-        context.actorOf(Props[SearcherActor]) ! SearchRequestMessage(
-          query,
-          curEngine
-        )
+        val curSearchActor =
+          context.actorOf(Props(classOf[SearcherActor], searcherActorConfig))
+        curSearchActor ! SearcherActor.SearchRequestMessage(query, curEngine)
       }
       sizeToWait = engines.size
-      context.system.scheduler.scheduleOnce(5.seconds) {
-        self ! StopActorMessage
-      }
+      stopMessageSender =
+        context.system.scheduler.scheduleOnce(aggregatorActorConfig.timeout) {
+          self ! StopActorMessage
+        }
       context.become(awaitingResponses)
   }
 
@@ -59,6 +55,7 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse])
     case SearcherResponseMessage(engineName, engineResponse) =>
       response(engineName) = engineResponse
       if (response.size == sizeToWait) {
+        stopMessageSender.cancel()
         stopActor()
       }
   }
@@ -67,4 +64,15 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse])
 object AggregatorActor {
   implicit val ThreadPool: ExecutionContextExecutor =
     ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
+
+  sealed trait AggregatorActorMessage
+
+  case class SearchQueryMessage(query: String, engines: Seq[SearchEngineConfig])
+      extends AggregatorActorMessage
+
+  case class SearcherResponseMessage(engineName: String,
+                                     response: SearchEngineResponse)
+      extends AggregatorActorMessage
+
+  case object StopActorMessage
 }

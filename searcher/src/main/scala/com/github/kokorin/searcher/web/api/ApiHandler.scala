@@ -8,9 +8,12 @@ import akka.http.scaladsl.server.Route
 import com.github.kokorin.searcher.web.Handler
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Promise}
-import ApiHandler.{ThreadPool, formats, system}
-import com.github.kokorin.searcher.actors.{AggregatorActor, SearchQueryMessage}
-import com.github.kokorin.searcher.config.ApplicationConfig
+import ApiHandler.{Formats, SearchAggregatorActorSystem, ThreadPool}
+import com.github.kokorin.searcher.actors.AggregatorActor
+import com.github.kokorin.searcher.config.{
+  ApplicationConfig,
+  SearchEngineConfig
+}
 import com.github.kokorin.searcher.model.AggregatedSearchResponse
 import org.json4s._
 import org.json4s.native.Serialization
@@ -20,8 +23,16 @@ class ApiHandler(applicationConfig: ApplicationConfig) extends Handler {
   private def pingRoute: Route = (path("search") & get & parameter("query")) {
     query =>
       val promise: Promise[AggregatedSearchResponse] = Promise()
-      val actor = system.actorOf(Props(classOf[AggregatorActor], promise))
-      actor ! SearchQueryMessage(query, applicationConfig.searchEngines)
+      val actor = SearchAggregatorActorSystem.actorOf(
+        Props(
+          classOf[AggregatorActor],
+          promise,
+          applicationConfig.aggregatorActorConfig,
+          applicationConfig.searcherActorConfig
+        )
+      )
+      actor ! AggregatorActor
+        .SearchQueryMessage(query, applicationConfig.searchEngines)
       complete(promise.future.map(write[AggregatedSearchResponse]))
   }
 
@@ -29,8 +40,8 @@ class ApiHandler(applicationConfig: ApplicationConfig) extends Handler {
 }
 
 object ApiHandler {
-  val system = ActorSystem("search_aggregator")
-  implicit val formats: Formats = Serialization.formats(NoTypeHints)
+  val SearchAggregatorActorSystem = ActorSystem("search-aggregator")
+  implicit val Formats: Formats = Serialization.formats(NoTypeHints)
   implicit val ThreadPool: ExecutionContextExecutor =
     ExecutionContext.fromExecutor(Executors.newFixedThreadPool(4))
 }
