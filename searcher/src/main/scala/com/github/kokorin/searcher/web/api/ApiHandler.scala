@@ -17,7 +17,7 @@ import org.json4s.native.Serialization
 import org.json4s.native.Serialization.write
 
 class ApiHandler(applicationConfig: ApplicationConfig) extends Handler {
-  private def pingRoute: Route = (path("search") & get & parameter('query)) {
+  private def searchRoute: Route = (path("search") & get & parameter('query)) {
     query =>
       val promise: Promise[AggregatedSearchResponse] = Promise()
       val actor = SearchAggregatorActorSystem.actorOf(
@@ -32,7 +32,7 @@ class ApiHandler(applicationConfig: ApplicationConfig) extends Handler {
       complete(promise.future.map(write[AggregatedSearchResponse]))
   }
 
-  override def route: Route = pingRoute
+  override def route: Route = searchRoute
 }
 
 object ApiHandler {

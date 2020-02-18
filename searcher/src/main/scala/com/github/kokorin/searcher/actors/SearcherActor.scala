@@ -39,7 +39,7 @@ class SearcherActor extends Actor with StrictLogging {
           new HttpGet(
             s"http://${searchEngine.host}:${searchEngine.port}/search?query=$request"
           ),
-          getCallback(searchEngine.name)
+          getCallback
         )
       } match {
         case Failure(exception) =>
@@ -47,16 +47,16 @@ class SearcherActor extends Actor with StrictLogging {
             s"Error while requesting ${searchEngine.name}",
             exception
           )
-          sendEmptyResponse(searchEngine.name)
+          sendEmptyResponse()
           context.stop(self)
         case Success(value) =>
           responseFuture = Some(value)
       }
   }
 
-  private def sendEmptyResponse(searchEngineName: String): Unit = {
+  private def sendEmptyResponse(): Unit = {
     context.parent ! AggregatorActor.SearcherResponseMessage(
-      searchEngineName,
+      curSearchEngineName,
       SearchEngineResponse(SearchEngineResponse.ERR, Seq())
     )
   }
@@ -66,24 +66,24 @@ class SearcherActor extends Actor with StrictLogging {
     context.stop(self)
   }
 
-  private def getCallback(searchEngineName: String) = {
+  private def getCallback = {
     new FutureCallback[HttpResponse] {
       override def completed(t: HttpResponse): Unit = {
-        logger.info(s"Received http response from $searchEngineName")
+        logger.info(s"Received http response from $curSearchEngineName")
         try {
           val stringResponse = EntityUtils.toString(t.getEntity)
           val response = read[SearchEngineResponse](stringResponse)
           context.parent ! AggregatorActor.SearcherResponseMessage(
-            searchEngineName,
+            curSearchEngineName,
             response
           )
         } catch {
           case NonFatal(ex) =>
             logger.error(
-              s"Error while parsing http response from $searchEngineName",
+              s"Error while parsing http response from $curSearchEngineName",
               ex
             )
-            sendEmptyResponse(searchEngineName)
+            sendEmptyResponse()
         } finally {
           onResponseReceiving()
         }
@@ -91,15 +91,15 @@ class SearcherActor extends Actor with StrictLogging {
 
       override def failed(e: Exception): Unit = {
         logger.error(
-          s"Error while executing http request to $searchEngineName",
+          s"Error while executing http request to $curSearchEngineName",
           e
         )
-        sendEmptyResponse(searchEngineName)
+        sendEmptyResponse()
         onResponseReceiving()
       }
 
       override def cancelled(): Unit = {
-        logger.info(s"Http request to $searchEngineName was cancelled")
+        logger.info(s"Http request to $curSearchEngineName was cancelled")
         onResponseReceiving()
       }
     }
@@ -110,13 +110,17 @@ class SearcherActor extends Actor with StrictLogging {
       s"Search actor for $curSearchEngineName is stopping, resources are being released..."
     )
     responseFuture.foreach(_.cancel(true))
-    try {
+    Try {
       httpClient.foreach(_.close())
-    } catch {
-      case NonFatal(ex) =>
+    } match {
+      case Failure(exception) =>
         logger.error(
           s"Error while closing http client in search actor for $curSearchEngineName",
-          ex
+          exception
+        )
+      case Success(_) =>
+        logger.info(
+          s"Http client in search actor for $curSearchEngineName has been closed succesfully"
         )
     }
   }

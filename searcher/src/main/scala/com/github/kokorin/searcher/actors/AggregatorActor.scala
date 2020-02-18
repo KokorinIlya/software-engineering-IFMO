@@ -21,13 +21,8 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
     extends Actor
     with StrictLogging {
 
-  // TODO: functional style
   var response: scala.collection.mutable.Map[String, SearchEngineResponse] =
     scala.collection.mutable.Map.empty
-
-  var sizeToWait: Int = -1
-
-  var stopMessageSender: Cancellable = _
 
   override def receive: Receive = {
     case SearchQueryMessage(query, engines) =>
@@ -39,24 +34,26 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
           curEngine
         )
       }
-      sizeToWait = engines.size
-      stopMessageSender =
+      val answersToWait = engines.size
+      val stopMessageSender =
         context.system.scheduler.scheduleOnce(aggregatorActorConfig.timeout) {
           self ! TimeoutMessage
         }
-      context.become(awaitingResponses)
+      context.become(awaitingResponses(answersToWait, stopMessageSender))
   }
 
   override def postStop(): Unit = {
+    logger.info(s"Aggregator actor is stopping...")
     promise.success(AggregatedSearchResponse(response.toMap))
   }
 
-  private def awaitingResponses: Receive = {
+  private def awaitingResponses(answersToWait: Int,
+                                stopMessageSender: Cancellable): Receive = {
     case TimeoutMessage =>
       context.stop(self)
     case SearcherResponseMessage(engineName, engineResponse) =>
       response(engineName) = engineResponse
-      if (response.size == sizeToWait) {
+      if (response.size == answersToWait) {
         stopMessageSender.cancel()
         context.stop(self)
       }

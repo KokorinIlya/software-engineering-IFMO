@@ -22,7 +22,11 @@ class WebApiStarter(actorSystemName: String,
       s"Actor system $actorSystemName is ready to bind on interface ${apiConfig.interface}, port ${apiConfig.port}"
     )
     val bindingFuture =
-      Http().bindAndHandle(handler.route, apiConfig.interface, apiConfig.port)
+      Http().bindAndHandle(
+        handler.allRoute,
+        apiConfig.interface,
+        apiConfig.port
+      )
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
