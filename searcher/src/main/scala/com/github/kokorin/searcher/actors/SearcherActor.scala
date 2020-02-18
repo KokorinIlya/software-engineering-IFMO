@@ -2,7 +2,7 @@ package com.github.kokorin.searcher.actors
 
 import java.util.concurrent.{Executors, Future}
 
-import akka.actor.Actor
+import akka.actor.{Actor, ActorRef}
 import com.github.kokorin.searcher.config.SearchEngineConfig
 import com.github.kokorin.searcher.model.SearchEngineResponse
 import org.apache.http.client.methods.HttpGet
@@ -10,7 +10,11 @@ import org.apache.http.concurrent.FutureCallback
 import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.read
-import SearcherActor.{Formats, RequestToSearchEngineMessage}
+import SearcherActor.{
+  RequestToSearchEngineMessage,
+  ResponseFromSearchEngineMessage,
+  getCallback
+}
 import com.github.kokorin.searcher.web.http.{
   AsyncHTTPClient,
   AsyncHTTPClientsProvider
@@ -39,7 +43,7 @@ class SearcherActor(clientProvider: AsyncHTTPClientsProvider)
           new HttpGet(
             s"http://${searchEngine.host}:${searchEngine.port}/search?query=$request"
           ),
-          getCallback
+          getCallback(self, curSearchEngineName)
         )
       } match {
         case Failure(exception) =>
@@ -47,61 +51,25 @@ class SearcherActor(clientProvider: AsyncHTTPClientsProvider)
             s"Error while requesting ${searchEngine.name}",
             exception
           )
-          sendEmptyResponse()
+          context.parent ! AggregatorActor.SearcherResponseMessage(
+            curSearchEngineName,
+            SearchEngineResponse(SearchEngineResponse.ERR, Seq())
+          )
           context.stop(self)
         case Success(value) =>
           responseFuture = Some(value)
+          context.become(awaitTermination)
       }
   }
 
-  private def sendEmptyResponse(): Unit = {
-    context.parent ! AggregatorActor.SearcherResponseMessage(
-      curSearchEngineName,
-      SearchEngineResponse(SearchEngineResponse.ERR, Seq())
-    )
-  }
-
-  private def onResponseReceiving(): Unit = {
-    responseFuture = None
-    context.stop(self)
-  }
-
-  private def getCallback: FutureCallback[String] = {
-    new FutureCallback[String] {
-      override def completed(stringResponse: String): Unit = {
-        logger.info(s"Received HTTP response from $curSearchEngineName")
-        try {
-          val response = read[SearchEngineResponse](stringResponse)
-          context.parent ! AggregatorActor.SearcherResponseMessage(
-            curSearchEngineName,
-            response
-          )
-        } catch {
-          case NonFatal(ex) =>
-            logger.error(
-              s"Error while parsing HTTP response from $curSearchEngineName",
-              ex
-            )
-            sendEmptyResponse()
-        } finally {
-          onResponseReceiving()
-        }
-      }
-
-      override def failed(e: Exception): Unit = {
-        logger.error(
-          s"Error while executing HTTP request to $curSearchEngineName",
-          e
-        )
-        sendEmptyResponse()
-        onResponseReceiving()
-      }
-
-      override def cancelled(): Unit = {
-        logger.info(s"HTTP request to $curSearchEngineName was cancelled")
-        onResponseReceiving()
-      }
-    }
+  private def awaitTermination: Receive = {
+    case ResponseFromSearchEngineMessage(response) =>
+      context.parent ! AggregatorActor.SearcherResponseMessage(
+        curSearchEngineName,
+        response
+      )
+      responseFuture = None
+      context.stop(self)
   }
 
   override def postStop(): Unit = {
@@ -125,12 +93,56 @@ class SearcherActor(clientProvider: AsyncHTTPClientsProvider)
   }
 }
 
-object SearcherActor {
+object SearcherActor extends StrictLogging {
   implicit val Formats: Formats = Serialization.formats(NoTypeHints)
 
   implicit val ThreadPool: ExecutionContextExecutor =
     ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor())
 
+  sealed trait SearcherActorMessage
+
   case class RequestToSearchEngineMessage(request: String,
                                           searchEngine: SearchEngineConfig)
+      extends SearcherActorMessage
+
+  case class ResponseFromSearchEngineMessage(response: SearchEngineResponse)
+      extends SearcherActorMessage
+
+  private def sendEmptyResponse(selfActorRef: ActorRef): Unit = {
+    selfActorRef ! ResponseFromSearchEngineMessage(
+      SearchEngineResponse(SearchEngineResponse.ERR, Seq())
+    )
+  }
+
+  private def getCallback(selfActorRef: ActorRef,
+                          searchEngineName: String): FutureCallback[String] = {
+    new FutureCallback[String] {
+      override def completed(stringResponse: String): Unit = {
+        logger.info(s"Received HTTP response from $searchEngineName")
+        try {
+          val response = read[SearchEngineResponse](stringResponse)
+          selfActorRef ! ResponseFromSearchEngineMessage(response)
+        } catch {
+          case NonFatal(ex) =>
+            logger.error(
+              s"Error while parsing HTTP response from $searchEngineName",
+              ex
+            )
+            sendEmptyResponse(selfActorRef)
+        }
+      }
+
+      override def failed(e: Exception): Unit = {
+        logger.error(
+          s"Error while executing HTTP request to $searchEngineName",
+          e
+        )
+        sendEmptyResponse(selfActorRef)
+      }
+
+      override def cancelled(): Unit = {
+        logger.info(s"HTTP request to $searchEngineName was cancelled")
+      }
+    }
+  }
 }
