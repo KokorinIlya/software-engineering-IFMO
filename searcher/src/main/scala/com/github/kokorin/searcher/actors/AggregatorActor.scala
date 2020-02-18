@@ -21,6 +21,7 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
     extends Actor
     with StrictLogging {
 
+  // TODO: functional style
   var response: scala.collection.mutable.Map[String, SearchEngineResponse] =
     scala.collection.mutable.Map.empty
 

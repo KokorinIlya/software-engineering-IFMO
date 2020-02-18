@@ -57,7 +57,7 @@ class SearcherActor extends Actor with StrictLogging {
   private def sendEmptyResponse(searchEngineName: String): Unit = {
     context.parent ! AggregatorActor.SearcherResponseMessage(
       searchEngineName,
-      SearchEngineResponse(status = 500, urls = Seq())
+      SearchEngineResponse(SearchEngineResponse.ERR, Seq())
     )
   }
 

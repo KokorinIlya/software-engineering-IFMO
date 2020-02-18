@@ -1,4 +1,11 @@
 package com.github.kokorin.searcher.model
 
-// TODO: use algebraic types
-case class SearchEngineResponse(status: Int, urls: Seq[String])
+object SearchEngineResponse {
+  type Status = Int
+
+  val OK: Status = 200
+  val ERR: Status = 500
+}
+
+case class SearchEngineResponse(status: SearchEngineResponse.Status,
+                                urls: Seq[String])

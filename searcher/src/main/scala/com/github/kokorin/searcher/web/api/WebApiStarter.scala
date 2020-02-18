@@ -1,8 +1,7 @@
 package com.github.kokorin.searcher.web.api
 
-import akka.actor.{Actor, ActorSystem}
+import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.server.Route
 import akka.stream.ActorMaterializer
 import com.github.kokorin.searcher.config.ApiConfig
 import com.github.kokorin.searcher.web.Handler
@@ -20,22 +19,22 @@ class WebApiStarter(actorSystemName: String,
     implicit val materializer: ActorMaterializer = ActorMaterializer()
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
     logger.info(
-      s"Ready to bind on interface ${apiConfig.interface}, port ${apiConfig.port}"
+      s"Actor system $actorSystemName is ready to bind on interface ${apiConfig.interface}, port ${apiConfig.port}"
     )
     val bindingFuture =
       Http().bindAndHandle(handler.route, apiConfig.interface, apiConfig.port)
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
-        logger.info("Shutting down...")
+        logger.info(s"Shutting down $actorSystemName...")
         val unbindFuture = bindingFuture.flatMap(_.unbind())
         Try {
           Await.result(unbindFuture, apiConfig.unbindTimeout)
         } match {
           case Failure(exception) =>
-            logger.error("Error while unbinding API", exception)
+            logger.error(s"Error while unbinding $actorSystemName", exception)
           case Success(_) =>
-            logger.info("Successfully API unbinding")
+            logger.info(s"Successfully $actorSystemName unbinding")
         }
         system.terminate()
       }

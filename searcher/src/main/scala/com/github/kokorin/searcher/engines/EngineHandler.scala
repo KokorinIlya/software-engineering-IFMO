@@ -24,8 +24,9 @@ class EngineHandler(engineName: String) extends Handler {
         val urls = (1 to 5).map { number =>
           s"host_number_$number.ru/did_you_know_about_$prettifiedQuery/from_$engineName"
         }
-        val answer = SearchEngineResponse(status = 200, urls = urls)
-        complete(write(answer))
+        val answer: SearchEngineResponse =
+          SearchEngineResponse(SearchEngineResponse.OK, urls)
+        complete(write[SearchEngineResponse](answer))
       }
   }
 }

@@ -16,7 +16,10 @@ object Main {
       )
     val appConfig = new ApplicationConfigImpl(mainConfig)
     val apiHandler = new ApiHandler(appConfig)
-    new WebApiStarter("api-actorsystem", apiHandler, appConfig.apiConfig)
-      .start()
+    new WebApiStarter(
+      "aggregator-api-actorsystem",
+      apiHandler,
+      appConfig.apiConfig
+    ).start()
   }
 }
