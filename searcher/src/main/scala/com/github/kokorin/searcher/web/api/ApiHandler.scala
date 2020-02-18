@@ -12,6 +12,7 @@ import ApiHandler.{Formats, SearchAggregatorActorSystem, ThreadPool}
 import com.github.kokorin.searcher.actors.AggregatorActor
 import com.github.kokorin.searcher.config.ApplicationConfig
 import com.github.kokorin.searcher.model.AggregatedSearchResponse
+import com.github.kokorin.searcher.web.http.AsyncHTTPClientsProviderImpl
 import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.write
@@ -24,7 +25,8 @@ class ApiHandler(applicationConfig: ApplicationConfig) extends Handler {
         Props(
           classOf[AggregatorActor],
           promise,
-          applicationConfig.aggregatorActorConfig
+          applicationConfig.aggregatorActorConfig,
+          AsyncHTTPClientsProviderImpl
         )
       )
       actor ! AggregatorActor

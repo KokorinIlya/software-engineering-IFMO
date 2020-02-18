@@ -15,9 +15,11 @@ import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Promise}
 import AggregatorActor._
+import com.github.kokorin.searcher.web.http.AsyncHTTPClientsProvider
 
 class AggregatorActor(promise: Promise[AggregatedSearchResponse],
-                      aggregatorActorConfig: AggregatorActorConfig)
+                      aggregatorActorConfig: AggregatorActorConfig,
+                      clientProvider: AsyncHTTPClientsProvider)
     extends Actor
     with StrictLogging {
 
@@ -28,7 +30,7 @@ class AggregatorActor(promise: Promise[AggregatedSearchResponse],
     case SearchQueryMessage(query, engines) =>
       for { curEngine <- engines } {
         val curSearchActor =
-          context.actorOf(Props(classOf[SearcherActor]))
+          context.actorOf(Props(classOf[SearcherActor], clientProvider))
         curSearchActor ! SearcherActor.RequestToSearchEngineMessage(
           query,
           curEngine

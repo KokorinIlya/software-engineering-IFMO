@@ -5,33 +5,33 @@ import java.util.concurrent.{Executors, Future}
 import akka.actor.Actor
 import com.github.kokorin.searcher.config.SearchEngineConfig
 import com.github.kokorin.searcher.model.SearchEngineResponse
-import org.apache.http.HttpResponse
 import org.apache.http.client.methods.HttpGet
 import org.apache.http.concurrent.FutureCallback
-import org.apache.http.impl.nio.client.{
-  CloseableHttpAsyncClient,
-  HttpAsyncClients
-}
-import org.apache.http.util.EntityUtils
 import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.read
 import SearcherActor.{Formats, RequestToSearchEngineMessage}
+import com.github.kokorin.searcher.web.http.{
+  AsyncHTTPClient,
+  AsyncHTTPClientsProvider
+}
 import com.typesafe.scalalogging.StrictLogging
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success, Try}
 
-class SearcherActor extends Actor with StrictLogging {
-  var httpClient: Option[CloseableHttpAsyncClient] = None
-  var responseFuture: Option[Future[HttpResponse]] = None
+class SearcherActor(clientProvider: AsyncHTTPClientsProvider)
+    extends Actor
+    with StrictLogging {
+  var httpClient: Option[AsyncHTTPClient] = None
+  var responseFuture: Option[Future[_]] = None
   var curSearchEngineName: String = "not_initialized_search_engine"
 
   override def receive: Receive = {
     case RequestToSearchEngineMessage(request, searchEngine) =>
       curSearchEngineName = searchEngine.name
-      val asyncHttpClient = HttpAsyncClients.createDefault() // TODO: use abstraction (and mock it for tests)
+      val asyncHttpClient = clientProvider.newAsyncClient
       httpClient = Some(asyncHttpClient)
       Try {
         asyncHttpClient.start()
@@ -66,12 +66,11 @@ class SearcherActor extends Actor with StrictLogging {
     context.stop(self)
   }
 
-  private def getCallback = {
-    new FutureCallback[HttpResponse] {
-      override def completed(t: HttpResponse): Unit = {
-        logger.info(s"Received http response from $curSearchEngineName")
+  private def getCallback: FutureCallback[String] = {
+    new FutureCallback[String] {
+      override def completed(stringResponse: String): Unit = {
+        logger.info(s"Received HTTP response from $curSearchEngineName")
         try {
-          val stringResponse = EntityUtils.toString(t.getEntity)
           val response = read[SearchEngineResponse](stringResponse)
           context.parent ! AggregatorActor.SearcherResponseMessage(
             curSearchEngineName,
@@ -80,7 +79,7 @@ class SearcherActor extends Actor with StrictLogging {
         } catch {
           case NonFatal(ex) =>
             logger.error(
-              s"Error while parsing http response from $curSearchEngineName",
+              s"Error while parsing HTTP response from $curSearchEngineName",
               ex
             )
             sendEmptyResponse()
@@ -91,7 +90,7 @@ class SearcherActor extends Actor with StrictLogging {
 
       override def failed(e: Exception): Unit = {
         logger.error(
-          s"Error while executing http request to $curSearchEngineName",
+          s"Error while executing HTTP request to $curSearchEngineName",
           e
         )
         sendEmptyResponse()
@@ -99,7 +98,7 @@ class SearcherActor extends Actor with StrictLogging {
       }
 
       override def cancelled(): Unit = {
-        logger.info(s"Http request to $curSearchEngineName was cancelled")
+        logger.info(s"HTTP request to $curSearchEngineName was cancelled")
         onResponseReceiving()
       }
     }
@@ -107,7 +106,7 @@ class SearcherActor extends Actor with StrictLogging {
 
   override def postStop(): Unit = {
     logger.info(
-      s"Search actor for $curSearchEngineName is stopping, resources are being released..."
+      s"$curSearchEngineName search actor is stopping, resources are being released..."
     )
     responseFuture.foreach(_.cancel(true))
     Try {
@@ -115,12 +114,12 @@ class SearcherActor extends Actor with StrictLogging {
     } match {
       case Failure(exception) =>
         logger.error(
-          s"Error while closing http client in search actor for $curSearchEngineName",
+          s"Error while closing HTTP client in $curSearchEngineName search actor",
           exception
         )
       case Success(_) =>
         logger.info(
-          s"Http client in search actor for $curSearchEngineName has been closed succesfully"
+          s"HTTP client in $curSearchEngineName search actor has been closed successfully"
         )
     }
   }
