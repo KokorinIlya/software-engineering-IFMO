@@ -28,6 +28,15 @@ class WebApiStarter(actorSystemName: String,
         apiConfig.port
       )
 
+    bindingFuture.onComplete {
+      case Success(_) =>
+        logger.info(
+          s"Successfully finished binding actor system $actorSystemName"
+        )
+      case Failure(exception) =>
+        logger.error(s"Error binding $actorSystemName", exception)
+    }
+
     Runtime.getRuntime.addShutdownHook(new Thread() {
       override def run(): Unit = {
         logger.info(s"Shutting down $actorSystemName...")
