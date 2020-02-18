@@ -35,6 +35,7 @@ class WebApiStarter(actorSystemName: String,
         )
       case Failure(exception) =>
         logger.error(s"Error binding $actorSystemName", exception)
+        System.exit(1)
     }
 
     Runtime.getRuntime.addShutdownHook(new Thread() {
