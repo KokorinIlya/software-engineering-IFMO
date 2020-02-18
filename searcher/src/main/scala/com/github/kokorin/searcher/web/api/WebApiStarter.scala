@@ -33,25 +33,25 @@ class WebApiStarter(actorSystemName: String,
         logger.info(
           s"Successfully finished binding actor system $actorSystemName"
         )
+        Runtime.getRuntime.addShutdownHook(new Thread() {
+          override def run(): Unit = {
+            logger.info(s"Shutting down $actorSystemName...")
+            val unbindFuture = bindingFuture.flatMap(_.unbind())
+            Try {
+              Await.result(unbindFuture, apiConfig.unbindTimeout)
+            } match {
+              case Failure(exception) =>
+                logger
+                  .error(s"Error while unbinding $actorSystemName", exception)
+              case Success(_) =>
+                logger.info(s"Successfully $actorSystemName unbinding")
+            }
+            system.terminate()
+          }
+        })
       case Failure(exception) =>
         logger.error(s"Error binding $actorSystemName", exception)
         System.exit(1)
     }
-
-    Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run(): Unit = {
-        logger.info(s"Shutting down $actorSystemName...")
-        val unbindFuture = bindingFuture.flatMap(_.unbind())
-        Try {
-          Await.result(unbindFuture, apiConfig.unbindTimeout)
-        } match {
-          case Failure(exception) =>
-            logger.error(s"Error while unbinding $actorSystemName", exception)
-          case Success(_) =>
-            logger.info(s"Successfully $actorSystemName unbinding")
-        }
-        system.terminate()
-      }
-    })
   }
 }
