@@ -48,7 +48,7 @@ class SearcherActor(clientProvider: AsyncHTTPClientsProvider)
       } match {
         case Failure(exception) =>
           logger.error(
-            s"Error while requesting ${searchEngine.name}",
+            s"Error while requesting $curSearchEngineName",
             exception
           )
           context.parent ! AggregatorActor.SearcherResponseMessage(
