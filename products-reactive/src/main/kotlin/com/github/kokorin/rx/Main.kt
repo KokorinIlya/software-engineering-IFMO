@@ -4,6 +4,7 @@ import com.github.kokorin.rx.command.Command
 import com.github.kokorin.rx.config.ApplicationConfigImpl
 import com.github.kokorin.rx.dao.ReactiveDaoImpl
 import com.github.kokorin.rx.providers.CurrencyConverterProviderImpl
+import com.github.kokorin.rx.providers.HTTPClientsProviderImpl
 import com.mongodb.rx.client.MongoClients
 import com.typesafe.config.ConfigFactory
 import io.reactivex.netty.protocol.http.server.HttpServer
@@ -14,10 +15,12 @@ fun main() {
     val applicationConfig = ApplicationConfigImpl(config)
     val databaseConfig = applicationConfig.databaseConfig
     val currencyConverterProvider = CurrencyConverterProviderImpl(
-        applicationConfig.currencyConversionApiKey
+        applicationConfig.currencyConversionConfig,
+        HTTPClientsProviderImpl
     )
     val dao = ReactiveDaoImpl(
-        MongoClients.create("${databaseConfig.schema}://${databaseConfig.host}:${databaseConfig.port}")
+        MongoClients
+            .create("${databaseConfig.schema}://${databaseConfig.host}:${databaseConfig.port}")
             .getDatabase(databaseConfig.databaseName),
         currencyConverterProvider
     )

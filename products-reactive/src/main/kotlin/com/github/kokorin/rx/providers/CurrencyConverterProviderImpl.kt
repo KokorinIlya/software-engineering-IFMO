@@ -2,11 +2,10 @@ package com.github.kokorin.rx.providers
 
 import com.beust.klaxon.Json
 import com.beust.klaxon.Klaxon
+import com.github.kokorin.rx.config.CurrencyConversionConfig
 import com.github.kokorin.rx.currency.CurrencyConverter
+import com.github.kokorin.rx.http.HTTPClient
 import com.github.kokorin.rx.model.Currency
-import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.util.EntityUtils
 import org.slf4j.LoggerFactory
 import java.lang.Exception
 import java.util.concurrent.Executors
@@ -20,19 +19,26 @@ data class CurrencyConversionResponse(
     val usdToRub: Double
 )
 
-class CurrencyConverterProviderImpl(startValue: CurrencyConverter, apiKey: String) :
-    Provider<CurrencyConverter> {
+class CurrencyConverterProviderImpl(
+    startValue: CurrencyConverter,
+    config: CurrencyConversionConfig,
+    private val httpClientsProvider: Provider<HTTPClient>
+) : Provider<CurrencyConverter> {
     private val log = LoggerFactory.getLogger(this.javaClass)
     private val curConverter = AtomicReference<CurrencyConverter>(startValue)
     private val scheduler = Executors.newScheduledThreadPool(1)
 
-    constructor(apiKey: String) : this(getConversion(apiKey), apiKey)
+    constructor(config: CurrencyConversionConfig, httpClientsProvider: Provider<HTTPClient>) : this(
+        getConversion(config, httpClientsProvider),
+        config,
+        httpClientsProvider
+    )
 
     init {
         log.info("Initializing currency conversion: ${startValue.conversionMap}")
         val runnable = Runnable {
             try {
-                val newConverter = getConversion(apiKey)
+                val newConverter = getConversion(config, httpClientsProvider)
                 log.info("New currency conversion is ${newConverter.conversionMap}")
                 val oldConverter = get()
                 val updateResult = curConverter.compareAndSet(oldConverter, newConverter)
@@ -49,18 +55,20 @@ class CurrencyConverterProviderImpl(startValue: CurrencyConverter, apiKey: Strin
     companion object {
         private val parser = Klaxon()
 
-        private fun getConversion(apiKey: String): CurrencyConverter {
+        private fun getConversion(
+            config: CurrencyConversionConfig,
+            httpClientsProvider: Provider<HTTPClient>
+        ): CurrencyConverter {
             val url =
-                "https://free.currconv.com/api/v7/convert?q=USD_EUR,USD_RUB&compact=ultra&apiKey=$apiKey"
-            val stringResponse = HttpClients.createDefault().use { client ->
-                client.execute(HttpGet(url)).use { response ->
-                    EntityUtils.toString(response.entity)
-                }
-            }
-
+                "${config.schema}://${config.host}/${config.path}?q=USD_EUR,USD_RUB&compact=ultra&apiKey=${config.key}"
+            val stringResponse = httpClientsProvider.get().use { it.getResponse(url) }
             val jsonResponse = parser.parse<CurrencyConversionResponse>(stringResponse)
                 ?: error("Cannot parse currency conversion from $stringResponse")
             val resultMap = HashMap<Pair<Currency, Currency>, Double>()
+            resultMap[Pair(Currency.USD, Currency.USD)] = 1.0
+            resultMap[Pair(Currency.RUB, Currency.RUB)] = 1.0
+            resultMap[Pair(Currency.EUR, Currency.EUR)] = 1.0
+
             resultMap[Pair(Currency.USD, Currency.EUR)] = jsonResponse.usdToEur
             resultMap[Pair(Currency.USD, Currency.RUB)] = jsonResponse.usdToRub
 
@@ -68,7 +76,8 @@ class CurrencyConverterProviderImpl(startValue: CurrencyConverter, apiKey: Strin
             resultMap[Pair(Currency.RUB, Currency.USD)] = 1.0 / jsonResponse.usdToRub
 
             resultMap[Pair(Currency.EUR, Currency.RUB)] = jsonResponse.usdToRub / jsonResponse.usdToEur
-            resultMap[Pair(Currency.RUB, Currency.USD)] = jsonResponse.usdToEur / jsonResponse.usdToRub
+            resultMap[Pair(Currency.RUB, Currency.EUR)] = jsonResponse.usdToEur / jsonResponse.usdToRub
+
             return CurrencyConverter(resultMap.toMap())
         }
     }

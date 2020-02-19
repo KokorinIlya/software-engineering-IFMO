@@ -14,7 +14,7 @@ import rx.Scheduler
 import rx.schedulers.Schedulers
 import org.bson.Document
 
-// TODO: Refactor
+// TODO: test it, mocking MongoDatabase, MongoCollection, FindObservable
 class ReactiveDaoImpl(
     private val db: MongoDatabase,
     private val currencyConverterProvider: Provider<CurrencyConverter>
