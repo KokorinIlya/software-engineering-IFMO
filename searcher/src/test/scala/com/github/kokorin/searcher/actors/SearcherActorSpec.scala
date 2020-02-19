@@ -92,7 +92,6 @@ class SearcherActorSpec extends AnyFlatSpec with Matchers with MockFactory {
 
         override def execute(request: HttpUriRequest,
                              callback: FutureCallback[String]): Future[_] = {
-          val stringRequest = request.getURI.getQuery.substring(6) // remove query=
           callback.failed(new IllegalArgumentException())
           mock[Future[Unit]]
         }
