@@ -1,10 +1,10 @@
 package com.github.kokorin.searcher.model
 
 object SearchEngineResponse {
-  type Status = Int
+  type Status = String
 
-  val OK: Status = 200
-  val ERR: Status = 500
+  val OK: Status = "OK"
+  val ERR: Status = "ERR"
 }
 
 case class SearchEngineResponse(status: SearchEngineResponse.Status,
