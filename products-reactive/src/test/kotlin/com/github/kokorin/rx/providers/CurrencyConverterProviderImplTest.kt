@@ -20,7 +20,9 @@ class CurrencyConverterProviderImplTest {
             override fun get(): HTTPClient {
                 return object : HTTPClient {
                     override fun getResponse(url: String): String {
-                        return if (url == "https://host/path/to/service?q=USD_EUR,USD_RUB&compact=ultra&apiKey=api_key") {
+                        return if (url ==
+                            "https://host/path/to/service?q=USD_EUR,USD_RUB&compact=ultra&apiKey=api_key"
+                        ) {
                             "{\"USD_EUR\": 0.925265, \"USD_RUB\": 63.5442}"
                         } else {
                             "ERROR"
