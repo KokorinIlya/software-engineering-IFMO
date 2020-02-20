@@ -1,8 +1,8 @@
+package com.github.kokorin.rx.providers
+
 import com.github.kokorin.rx.config.CurrencyConversionConfig
 import com.github.kokorin.rx.http.HTTPClient
 import com.github.kokorin.rx.model.Currency
-import com.github.kokorin.rx.providers.CurrencyConverterProviderImpl
-import com.github.kokorin.rx.providers.Provider
 import com.sun.org.apache.xalan.internal.lib.ExsltMath.abs
 import org.junit.Test
 import org.junit.Assert.*
