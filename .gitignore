@@ -1,1 +1,12 @@
-lru-cache/.idea
+.idea
+.DS_Store
+*.iml
+target
+gradle
+build
+fitness-center/src/main/resources/manager/application.conf
+.gradle
+out
+products-reactive/src/main/resources/application.conf
+*.db
+postgresql_dir
