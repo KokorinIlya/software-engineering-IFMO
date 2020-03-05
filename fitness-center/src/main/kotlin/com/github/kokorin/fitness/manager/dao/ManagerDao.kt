@@ -63,9 +63,9 @@ class ManagerDao(private val connection: SuspendingConnection) : CommandDao, Que
             for (tableName in listOf("Events", "NewUserEvents")) {
                 val newUserEventCommand =
                     """
-                    INSERT INTO $tableName (user_id, user_event_id)
-                    VALUES (?, 0);
-                """.trimIndent()
+                        INSERT INTO $tableName (user_id, user_event_id)
+                        VALUES (?, 0);
+                    """.trimIndent()
                 it.sendPreparedStatement(newUserEventCommand, listOf(newUid))
             }
             newUid
