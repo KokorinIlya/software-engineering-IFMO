@@ -1,4 +1,4 @@
-package com.github.kokorin.fitness.manager.config
+package com.github.kokorin.fitness.gate.config
 
 import com.github.kokorin.fitness.common.config.ApiConfig
 import com.github.kokorin.fitness.common.config.ApiConfigImpl
@@ -9,6 +9,7 @@ import com.typesafe.config.Config
 interface ApplicationConfig {
     val apiConfig: ApiConfig
     val databaseConfig: DatabaseConfig
+    // TODO: stats config
 }
 
 class ApplicationConfigImpl(conf: Config) : ApplicationConfig {

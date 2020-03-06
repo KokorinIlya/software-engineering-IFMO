@@ -1,5 +1,7 @@
 CREATE TYPE Entity AS ENUM ('USER');
 
+CREATE TYPE GateEventType AS ENUM ('ENTER', 'EXIT');
+
 CREATE TABLE MaxIds
 (
     entity Entity NOT NULL PRIMARY KEY,
@@ -16,27 +18,21 @@ CREATE TABLE Events
     PRIMARY KEY (user_id, user_event_id)
 );
 
-CREATE TABLE NewUserEvents
-(
-    user_id       INT NOT NULL,
-    user_event_id INT NOT NULL,
-    FOREIGN KEY (user_id, user_event_id) REFERENCES Events (user_id, user_event_id)
-);
-
 CREATE TABLE SubscriptionRenewalsEvents
 (
     user_id       INT       NOT NULL,
     user_event_id INT       NOT NULL,
     end_date      TIMESTAMP NOT NULL,
+    PRIMARY KEY (user_id, user_event_id),
     FOREIGN KEY (user_id, user_event_id) REFERENCES Events (user_id, user_event_id)
 );
-
-CREATE TYPE GateEventType AS ENUM ('ENTER', 'EXIT');
 
 CREATE TABLE GateEvents
 (
     user_id         INT           NOT NULL,
     user_event_id   INT           NOT NULL,
     gate_event_type GateEventType NOT NULL,
+    event_timestamp TIMESTAMP     NOT NULL,
+    PRIMARY KEY (user_id, user_event_id),
     FOREIGN KEY (user_id, user_event_id) REFERENCES Events (user_id, user_event_id)
 );

@@ -1,4 +1,4 @@
-package com.github.kokorin.fitness.manager.dao
+package com.github.kokorin.fitness.manager.query
 
 import com.github.kokorin.fitness.manager.model.User
 

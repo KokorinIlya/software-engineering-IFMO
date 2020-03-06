@@ -10,3 +10,4 @@ out
 products-reactive/src/main/resources/application.conf
 *.db
 postgresql_dir
+fitness-center/src/main/resources/gate/application.conf
