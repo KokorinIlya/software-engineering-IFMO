@@ -29,9 +29,8 @@ fun main(): Unit = runBlocking {
     val queryDao = QueryDaoImpl(connection)
     val commandProcessor = CommandProcessor(commandDao)
     val queryProcessor = QueryProcessor(queryDao)
-    // TODO: logging
 
-    val server = embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
+    embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
         routing {
             get("/command/new_uid") {
                 call.respondText(commandProcessor.process(NewUserCommand))
@@ -49,4 +48,5 @@ fun main(): Unit = runBlocking {
             }
         }
     }.start(wait = true)
+    Unit
 }

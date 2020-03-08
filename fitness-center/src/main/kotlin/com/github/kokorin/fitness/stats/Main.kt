@@ -28,7 +28,7 @@ fun main(): Unit = runBlocking {
     val commandProcessor = CommandProcessor(stateHolder)
 
     stateHolder.init(connection)
-    val server = embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
+    embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
         routing {
             get("/query/get_stats") {
                 val uid = call.request.queryParameters.getUid()
@@ -44,4 +44,5 @@ fun main(): Unit = runBlocking {
             }
         }
     }.start(wait = true)
+    Unit
 }

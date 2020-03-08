@@ -27,7 +27,7 @@ fun main(): Unit = runBlocking {
     val clientsProvider = StatsHttpClientsProviderImpl(applicationConfig.statsConfig)
     val commandProcessor = CommandProcessor(dao, clientsProvider)
 
-    val server = embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
+    embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
         routing {
             get("/command/enter") {
                 val uid = call.request.queryParameters.getUid()
@@ -43,4 +43,5 @@ fun main(): Unit = runBlocking {
             }
         }
     }.start(wait = true)
+    Unit
 }

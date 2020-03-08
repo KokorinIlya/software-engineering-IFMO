@@ -7,12 +7,14 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.slf4j.LoggerFactory
 
 class CommandProcessor(
     private val commandDao: CommandDao,
     private val statsHttpClientsProvider: StatsHttpClientsProvider
-) :
-    Processor<Command> {
+) : Processor<Command> {
+    private val log = LoggerFactory.getLogger(this.javaClass)
+
     override suspend fun doProcess(t: Command): String {
         return when (t) {
             is EnterCommand -> {
@@ -24,8 +26,22 @@ class CommandProcessor(
                 val client = statsHttpClientsProvider.getClient()
 
                 GlobalScope.launch {
-                    val response = client.exitCommand(t.uid, enterTimestamp, t.exitTimestamp)
-                    // TODO: log response
+                    log.info(
+                        "STATS << EXIT{uid = ${t.uid}, " +
+                                "enter_timestamp = $enterTimestamp, " +
+                                "exit_timestamp = $${t.exitTimestamp}}"
+                    )
+                    val response = try {
+                        client.exitCommand(t.uid, enterTimestamp, t.exitTimestamp)
+                    } catch (e: Exception) {
+                        log.error("Error while executing request to stats module", e)
+                        "ERROR: ${e.message}"
+                    }
+                    log.info(
+                        "EXIT{uid = ${t.uid}, " +
+                                "enter_timestamp = $enterTimestamp, " +
+                                "exit_timestamp = $${t.exitTimestamp}}: STATS >> $response"
+                    )
                 }
                 "Exiting..."
             }
