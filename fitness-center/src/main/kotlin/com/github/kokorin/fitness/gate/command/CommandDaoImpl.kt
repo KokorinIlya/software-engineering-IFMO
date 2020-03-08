@@ -5,17 +5,24 @@ import com.github.kokorin.fitness.common.dao.CommonDao
 import org.joda.time.LocalDateTime
 
 class CommandDaoImpl(private val connection: SuspendingConnection) : CommonDao(), CommandDao {
-    private suspend fun getLastUserGateEventType(uid: Int, transactionConnection: SuspendingConnection): String? {
+    data class Event(val eventType: String, val eventTimestamp: LocalDateTime)
+
+    private suspend fun getLastUserGateEventType(
+        uid: Int,
+        transactionConnection: SuspendingConnection
+    ): Event? {
         // TODO: Enum
         val query =
             """
                 WITH CurUserGateEvents AS (
                     SELECT GateEvents.user_event_id,
-                           GateEvents.gate_event_type
+                           GateEvents.gate_event_type,
+                           GateEvents.event_timestamp
                     FROM GateEvents
                     WHERE GateEvents.user_id = ?
                 )
-                SELECT CurUserGateEvents.gate_event_type
+                SELECT CurUserGateEvents.gate_event_type,
+                       CurUserGateEvents.event_timestamp
                 FROM CurUserGateEvents
                 WHERE CurUserGateEvents.user_event_id = (
                     SELECT max(CurUserGateEvents.user_event_id)
@@ -26,7 +33,9 @@ class CommandDaoImpl(private val connection: SuspendingConnection) : CommonDao()
         return if (result.size == 0) {
             null
         } else {
-            result[0].getString("gate_event_type")
+            val eventType = result[0].getString("gate_event_type")!!
+            val eventTimestamp = result[0].getAs<LocalDateTime>("event_timestamp")
+            Event(eventType, eventTimestamp)
         }
     }
 
@@ -63,22 +72,22 @@ class CommandDaoImpl(private val connection: SuspendingConnection) : CommonDao()
                 "Cannot process enter at $enterTime, because subscription is active only before $subscriptionDate"
             )
         }
-        val prevEventType = getLastUserGateEventType(uid, it)
-        if (prevEventType == "ENTER") {
+        val prevEvent = getLastUserGateEventType(uid, it)
+        if (prevEvent?.eventType == "ENTER") {
             throw IllegalArgumentException("Previous event for user $uid was ENTER, cannot enter now")
         }
         addGateEvent(uid, "ENTER", enterTime, it)
     }
 
-    override suspend fun processExit(uid: Int, exitTime: LocalDateTime) = connection.inTransaction {
-        // TODO: send to stats enter & exit time
+    override suspend fun processExit(uid: Int, exitTime: LocalDateTime): LocalDateTime = connection.inTransaction {
         if (!doesUserExist(uid, it)) {
             throw IllegalArgumentException("User with uid = $uid doesn't exist")
         }
-        val prevEventType = getLastUserGateEventType(uid, it)
-        if (prevEventType != "ENTER") {
-            throw IllegalArgumentException("Previous event for user $uid was $prevEventType, cannot exit now")
+        val prevEvent = getLastUserGateEventType(uid, it)
+        if (prevEvent?.eventType != "ENTER") {
+            throw IllegalArgumentException("Previous event for user $uid was $prevEvent, cannot exit now")
         }
         addGateEvent(uid, "EXIT", exitTime, it)
+        prevEvent.eventTimestamp
     }
 }

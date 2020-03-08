@@ -21,6 +21,8 @@ dependencies {
 
     compile "ch.qos.logback:logback-classic:1.2.1"
     compile group: 'com.typesafe', name: 'config', version: '1.4.0'
+
+    compile "io.ktor:ktor-client-apache:1.2.4"
 }
 
 compileKotlin {

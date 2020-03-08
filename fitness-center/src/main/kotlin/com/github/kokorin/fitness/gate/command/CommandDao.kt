@@ -5,5 +5,5 @@ import org.joda.time.LocalDateTime
 interface CommandDao {
     suspend fun processEnter(uid: Int, enterTime: LocalDateTime)
 
-    suspend fun processExit(uid: Int, exitTime: LocalDateTime)
+    suspend fun processExit(uid: Int, exitTime: LocalDateTime): LocalDateTime
 }

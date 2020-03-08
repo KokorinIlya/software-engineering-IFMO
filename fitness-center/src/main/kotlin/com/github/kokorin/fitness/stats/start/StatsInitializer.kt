@@ -3,9 +3,10 @@ package com.github.kokorin.fitness.stats.start
 import com.github.jasync.sql.db.SuspendingConnection
 import com.github.kokorin.fitness.stats.model.UserStats
 import org.joda.time.Period
+import java.util.concurrent.ConcurrentHashMap
 
 class StatsInitializer(private val connection: SuspendingConnection) {
-    suspend fun init(): Map<Int, UserStats> {
+    suspend fun init(): ConcurrentHashMap<Int, UserStats> {
         val query =
             """
                 WITH ExitSumByUser AS (
@@ -63,13 +64,13 @@ class StatsInitializer(private val connection: SuspendingConnection) {
                          NATURAL JOIN ExitsCountByUser;
             """.trimIndent()
         val result = connection.sendPreparedStatement(query).rows
-        val resultMap = mutableMapOf<Int, UserStats>()
+        val resultMap = ConcurrentHashMap<Int, UserStats>()
         for (curRow in result) {
             val uid = curRow.getInt("user_id")!!
             val interval = curRow.getAs<Period>("total_interval")
             val visitsCount = curRow.getLong("visits_count")!!.toInt()
             resultMap[uid] = UserStats(interval, visitsCount)
         }
-        return resultMap.toMap()
+        return resultMap
     }
 }
