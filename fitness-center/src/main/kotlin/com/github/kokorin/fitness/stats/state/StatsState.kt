@@ -1,12 +1,22 @@
-package com.github.kokorin.fitness.stats.start
+package com.github.kokorin.fitness.stats.state
 
 import com.github.jasync.sql.db.SuspendingConnection
+import com.github.kokorin.fitness.stats.command.UpdatableStats
 import com.github.kokorin.fitness.stats.model.UserStats
+import com.github.kokorin.fitness.stats.query.QueryableStats
+import org.joda.time.LocalDateTime
 import org.joda.time.Period
 import java.util.concurrent.ConcurrentHashMap
 
-class StatsInitializer(private val connection: SuspendingConnection) {
-    suspend fun init(): ConcurrentHashMap<Int, UserStats> {
+class StatsState : UpdatableStats, QueryableStats {
+    private val state = ConcurrentHashMap<Int, UserStats>()
+
+    /*
+    Should be called once from a single thread.
+    Call of init should happen-before call of updateState
+    Reference should be correctly published
+     */
+    suspend fun init(connection: SuspendingConnection) {
         val query =
             """
                 WITH ExitSumByUser AS (
@@ -64,13 +74,25 @@ class StatsInitializer(private val connection: SuspendingConnection) {
                          NATURAL JOIN ExitsCountByUser;
             """.trimIndent()
         val result = connection.sendPreparedStatement(query).rows
-        val resultMap = ConcurrentHashMap<Int, UserStats>()
         for (curRow in result) {
             val uid = curRow.getInt("user_id")!!
             val interval = curRow.getAs<Period>("total_interval")
             val visitsCount = curRow.getLong("visits_count")!!.toInt()
-            resultMap[uid] = UserStats(interval, visitsCount)
+            state[uid] = UserStats(interval, visitsCount)
         }
-        return resultMap
     }
+
+    // Thread-safe
+    override fun updateState(uid: Int, enterTime: LocalDateTime, exitTime: LocalDateTime) {
+        val period = Period.fieldDifference(enterTime, exitTime)
+        state.compute(uid) { _, curStats ->
+            if (curStats == null) {
+                UserStats(period.normalizedStandard(), 1)
+            } else {
+                UserStats(curStats.totalTime.plus(period).normalizedStandard(), curStats.visitsCount + 1)
+            }
+        }
+    }
+
+    override fun getUserStats(uid: Int): UserStats? = state[uid]
 }

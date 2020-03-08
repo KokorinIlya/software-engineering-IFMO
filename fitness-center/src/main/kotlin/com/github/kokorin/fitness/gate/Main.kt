@@ -1,6 +1,7 @@
 package com.github.kokorin.fitness.gate
 
 import com.github.kokorin.fitness.common.postgresql.ConnectionPoolProvider
+import com.github.kokorin.fitness.common.utils.getUid
 import com.github.kokorin.fitness.gate.command.CommandDaoImpl
 import com.github.kokorin.fitness.gate.command.CommandProcessor
 import com.github.kokorin.fitness.gate.command.EnterCommand
@@ -29,13 +30,13 @@ fun main(): Unit = runBlocking {
     val server = embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
         routing {
             get("/command/enter") {
-                val uid = call.request.queryParameters["uid"]?.toInt() ?: -1
+                val uid = call.request.queryParameters.getUid()
                 val enterTime = LocalDateTime.now()
                 val command = EnterCommand(uid, enterTime)
                 call.respondText(commandProcessor.process(command))
             }
             get("/command/exit") {
-                val uid = call.request.queryParameters["uid"]?.toInt() ?: -1
+                val uid = call.request.queryParameters.getUid()
                 val exitTime = LocalDateTime.now()
                 val command = ExitCommand(uid, exitTime)
                 call.respondText(commandProcessor.process(command))

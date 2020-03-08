@@ -1,6 +1,8 @@
 package com.github.kokorin.fitness.manager
 
 import com.github.kokorin.fitness.common.postgresql.ConnectionPoolProvider
+import com.github.kokorin.fitness.common.utils.getTimestamp
+import com.github.kokorin.fitness.common.utils.getUid
 import com.github.kokorin.fitness.manager.config.ApplicationConfigImpl
 import com.github.kokorin.fitness.manager.command.CommandDaoImpl
 import com.github.kokorin.fitness.manager.command.CommandProcessor
@@ -16,8 +18,6 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.runBlocking
-import org.joda.time.LocalDate
-import org.joda.time.LocalDateTime
 import java.nio.file.Paths
 
 fun main(): Unit = runBlocking {
@@ -37,15 +37,13 @@ fun main(): Unit = runBlocking {
                 call.respondText(commandProcessor.process(NewUserCommand))
             }
             get("/command/renewal") {
-                val uid = call.request.queryParameters["uid"]?.toInt() ?: -1
-                val until = LocalDateTime.parse(
-                    call.request.queryParameters["until"] ?: "1862-04-14T00:00:00"
-                )
+                val uid = call.request.queryParameters.getUid()
+                val until = call.request.queryParameters.getTimestamp("until")
                 val command = SubscriptionRenewalCommand(uid, until)
                 call.respondText(commandProcessor.process(command))
             }
             get("query/get_user") {
-                val uid = call.request.queryParameters["uid"]?.toInt() ?: -1
+                val uid = call.request.queryParameters.getUid()
                 val query = GetUserQuery(uid)
                 call.respondText(queryProcessor.process(query))
             }
