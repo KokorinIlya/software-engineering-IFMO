@@ -2,9 +2,6 @@ package com.github.kokorin.fitness.gate.command
 
 import com.github.kokorin.fitness.common.processor.Processor
 import com.github.kokorin.fitness.gate.http.StatsHttpClientsProvider
-import com.github.kokorin.fitness.gate.utils.serialize
-import io.ktor.client.HttpClient
-import io.ktor.client.request.get
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
