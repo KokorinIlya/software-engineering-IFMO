@@ -26,10 +26,10 @@ class CommandProcessor(
                 val client = statsHttpClientsProvider.getClient()
 
                 GlobalScope.launch {
+                    val exitRequest =
+                        "EXIT{uid = ${t.uid}, enter_timestamp = $enterTimestamp, exit_timestamp = ${t.exitTimestamp}}"
                     log.info(
-                        "STATS << EXIT{uid = ${t.uid}, " +
-                                "enter_timestamp = $enterTimestamp, " +
-                                "exit_timestamp = $${t.exitTimestamp}}"
+                        "STATS << $exitRequest"
                     )
                     val response = try {
                         client.exitCommand(t.uid, enterTimestamp, t.exitTimestamp)
@@ -38,9 +38,7 @@ class CommandProcessor(
                         "ERROR: ${e.message}"
                     }
                     log.info(
-                        "EXIT{uid = ${t.uid}, " +
-                                "enter_timestamp = $enterTimestamp, " +
-                                "exit_timestamp = $${t.exitTimestamp}}: STATS >> $response"
+                        "$exitRequest: STATS >> $response"
                     )
                 }
                 "Exiting..."
