@@ -6,6 +6,7 @@ import com.github.kokorin.fitness.gate.command.CommandProcessor
 import com.github.kokorin.fitness.gate.command.EnterCommand
 import com.github.kokorin.fitness.gate.command.ExitCommand
 import com.github.kokorin.fitness.gate.config.ApplicationConfigImpl
+import com.github.kokorin.fitness.gate.http.StatsHttpClientsProviderImpl
 import com.typesafe.config.ConfigFactory
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Paths
@@ -22,7 +23,8 @@ fun main(): Unit = runBlocking {
     val applicationConfig = ApplicationConfigImpl(config)
     val connection = ConnectionPoolProvider.getConnection(applicationConfig.databaseConfig)
     val dao = CommandDaoImpl(connection)
-    val commandProcessor = CommandProcessor(dao)
+    val clientsProvider = StatsHttpClientsProviderImpl(applicationConfig.statsConfig)
+    val commandProcessor = CommandProcessor(dao, clientsProvider)
 
     val server = embeddedServer(Netty, port = applicationConfig.apiConfig.port) {
         routing {
