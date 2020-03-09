@@ -211,4 +211,115 @@ class CommandDaoImplTest {
         val ans = dao.subscriptionRenewal(1, until)
         assertEquals(ans, Unit)
     }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun firstIncorrectRenewalTest() = runBlocking {
+        val mainConnection = mockk<SuspendingConnection>()
+        val until = LocalDateTime.parse("1862-04-13T20:00:00")
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+            .coAnswers {
+                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val transactionConnection = mockk<SuspendingConnection>()
+                callback(transactionConnection)
+            }
+        val clock = TimeTravelClock(LocalDateTime.parse("1862-04-14T20:00:00"))
+        val dao = CommandDaoImpl(mainConnection, clock, poolSize = 2)
+        dao.subscriptionRenewal(1, until)
+    }
+
+    @Test
+    fun correctRenewalTest() = runBlocking {
+        val mainConnection = mockk<SuspendingConnection>()
+        val until = LocalDateTime.parse("1862-04-15T20:00:00")
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+            .coAnswers {
+                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val transactionConnection = mockk<SuspendingConnection>()
+
+                coEvery {
+                    transactionConnection.sendPreparedStatement(CommonDao.getUserQuery, listOf(1))
+                }.answers {
+                    val rows = mockk<ResultSet>()
+                    every { rows.size }.returns(1)
+                    QueryResult(rowsAffected = 0, statusMessage = "OK", rows = rows)
+                }
+
+                coEvery {
+                    transactionConnection.sendPreparedStatement(CommonDao.maxSubscriptionDateQuery, listOf(1))
+                }.answers {
+                    val rows = mockk<ResultSet>()
+                    every { rows.size }.returns(1)
+                    val rowData = mockk<RowData>()
+                    every { rowData.getAs<LocalDateTime>("end_date") }.returns(
+                        LocalDateTime.parse("1862-04-13T20:00:00")
+                    )
+                    every { rows[0] }.returns(rowData)
+                    QueryResult(rowsAffected = 0, statusMessage = "OK", rows = rows)
+                }
+
+                coEvery {
+                    transactionConnection.sendPreparedStatement(CommonDao.maxUserEventIdQuery, listOf(1))
+                }.answers {
+                    val rows = mockk<ResultSet>()
+                    val rowData = mockk<RowData>()
+                    every { rowData.getInt("max") }.returns(14)
+                    every { rows[0] }.returns(rowData)
+                    QueryResult(rowsAffected = 0, statusMessage = "OK", rows = rows)
+                }
+
+                coEvery {
+                    transactionConnection.sendPreparedStatement(CommandDaoImpl.newEventCommand, listOf(1, 15))
+                }.answers {
+                    QueryResult(rowsAffected = 1, statusMessage = "OK")
+                }
+
+                coEvery {
+                    transactionConnection.sendPreparedStatement(CommandDaoImpl.renewalCommand, listOf(1, 15, until))
+                }.answers {
+                    QueryResult(rowsAffected = 1, statusMessage = "OK")
+                }
+
+                callback(transactionConnection)
+            }
+        val clock = TimeTravelClock(LocalDateTime.parse("1862-04-14T20:00:00"))
+        val dao = CommandDaoImpl(mainConnection, clock, poolSize = 2)
+        val ans = dao.subscriptionRenewal(1, until)
+        assertEquals(ans, Unit)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun incorrectRenewalTest() = runBlocking {
+        val mainConnection = mockk<SuspendingConnection>()
+        val until = LocalDateTime.parse("1862-04-15T20:00:00")
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+            .coAnswers {
+                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val transactionConnection = mockk<SuspendingConnection>()
+
+                coEvery {
+                    transactionConnection.sendPreparedStatement(CommonDao.getUserQuery, listOf(1))
+                }.answers {
+                    val rows = mockk<ResultSet>()
+                    every { rows.size }.returns(1)
+                    QueryResult(rowsAffected = 0, statusMessage = "OK", rows = rows)
+                }
+
+                coEvery {
+                    transactionConnection.sendPreparedStatement(CommonDao.maxSubscriptionDateQuery, listOf(1))
+                }.answers {
+                    val rows = mockk<ResultSet>()
+                    every { rows.size }.returns(1)
+                    val rowData = mockk<RowData>()
+                    every { rowData.getAs<LocalDateTime>("end_date") }.returns(
+                        LocalDateTime.parse("1862-04-17T20:00:00")
+                    )
+                    every { rows[0] }.returns(rowData)
+                    QueryResult(rowsAffected = 0, statusMessage = "OK", rows = rows)
+                }
+                callback(transactionConnection)
+            }
+        val clock = TimeTravelClock(LocalDateTime.parse("1862-04-14T20:00:00"))
+        val dao = CommandDaoImpl(mainConnection, clock, poolSize = 2)
+        dao.subscriptionRenewal(1, until)
+    }
 }
