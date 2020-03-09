@@ -17,7 +17,31 @@ class StatsState : UpdatableStats, QueryableStats {
     Reference should be correctly published
      */
     suspend fun init(connection: SuspendingConnection) {
-        val query =
+        val result = connection.sendQuery(getStatsQuery).rows
+        for (curRow in result) {
+            val uid = curRow.getInt("user_id")!!
+            val interval = curRow.getAs<Period>("total_interval")
+            val visitsCount = curRow.getLong("visits_count")!!.toInt()
+            state[uid] = UserStats(interval, visitsCount)
+        }
+    }
+
+    // Thread-safe
+    override fun updateState(uid: Int, enterTime: LocalDateTime, exitTime: LocalDateTime) {
+        val period = Period.fieldDifference(enterTime, exitTime)
+        state.compute(uid) { _, curStats ->
+            if (curStats == null) {
+                UserStats(period.normalizedStandard(), 1)
+            } else {
+                UserStats(curStats.totalTime.plus(period).normalizedStandard(), curStats.visitsCount + 1)
+            }
+        }
+    }
+
+    override fun getUserStats(uid: Int): UserStats? = state[uid]
+
+    companion object {
+        val getStatsQuery =
             """
                 WITH ExitSumByUser AS (
                     SELECT GateEvents.user_id,
@@ -73,26 +97,5 @@ class StatsState : UpdatableStats, QueryableStats {
                          NATURAL JOIN SubtractByUser
                          NATURAL JOIN ExitsCountByUser;
             """.trimIndent()
-        val result = connection.sendPreparedStatement(query).rows
-        for (curRow in result) {
-            val uid = curRow.getInt("user_id")!!
-            val interval = curRow.getAs<Period>("total_interval")
-            val visitsCount = curRow.getLong("visits_count")!!.toInt()
-            state[uid] = UserStats(interval, visitsCount)
-        }
     }
-
-    // Thread-safe
-    override fun updateState(uid: Int, enterTime: LocalDateTime, exitTime: LocalDateTime) {
-        val period = Period.fieldDifference(enterTime, exitTime)
-        state.compute(uid) { _, curStats ->
-            if (curStats == null) {
-                UserStats(period.normalizedStandard(), 1)
-            } else {
-                UserStats(curStats.totalTime.plus(period).normalizedStandard(), curStats.visitsCount + 1)
-            }
-        }
-    }
-
-    override fun getUserStats(uid: Int): UserStats? = state[uid]
 }
