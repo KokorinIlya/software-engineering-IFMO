@@ -1,5 +1,6 @@
 package com.github.kokorin.fitness.manager
 
+import com.github.kokorin.fitness.common.clock.RealTimeClock
 import com.github.kokorin.fitness.common.postgresql.ConnectionPoolProvider
 import com.github.kokorin.fitness.common.utils.getTimestamp
 import com.github.kokorin.fitness.common.utils.getUid
@@ -25,7 +26,7 @@ fun main(): Unit = runBlocking {
     val config = ConfigFactory.parseFile(pathToConfig.toFile())
     val applicationConfig = ApplicationConfigImpl(config)
     val connection = ConnectionPoolProvider.getConnection(applicationConfig.databaseConfig)
-    val commandDao = CommandDaoImpl(connection)
+    val commandDao = CommandDaoImpl(connection, RealTimeClock)
     val queryDao = QueryDaoImpl(connection)
     val commandProcessor = CommandProcessor(commandDao)
     val queryProcessor = QueryProcessor(queryDao)

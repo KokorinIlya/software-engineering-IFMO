@@ -1,12 +1,17 @@
 package com.github.kokorin.fitness.manager.command
 
 import com.github.jasync.sql.db.SuspendingConnection
+import com.github.kokorin.fitness.common.clock.Clock
 import com.github.kokorin.fitness.common.dao.CommonDao
 import org.joda.time.LocalDateTime
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.IllegalArgumentException
 
-class CommandDaoImpl(private val connection: SuspendingConnection, private val poolSize: Int = 10) : CommonDao(),
+class CommandDaoImpl(
+    private val connection: SuspendingConnection,
+    private val clock: Clock,
+    private val poolSize: Int = 10
+) : CommonDao(),
     CommandDao {
     data class AvailableUids(val maxUsedUid: Int, val maxAvailableUid: Int)
 
@@ -59,15 +64,12 @@ class CommandDaoImpl(private val connection: SuspendingConnection, private val p
 
     override suspend fun registerNewUser(): Int = connection.inTransaction {
         val newUid = getNewUid(it)
-        val result = it.sendPreparedStatement(newUserEventCommand, listOf(newUid))
-        if (result.rowsAffected != 1L) {
-            throw IllegalStateException("Error inserting new user")
-        }
+        it.sendPreparedStatement(newUserEventCommand, listOf(newUid))
         newUid
     }
 
     override suspend fun subscriptionRenewal(uid: Int, until: LocalDateTime) = connection.inTransaction {
-        val curDate = LocalDateTime.now()
+        val curDate = clock.now()
         if (!curDate.isBefore(until)) {
             throw IllegalArgumentException("Cannot process renewal until date $until at day $curDate")
         }
