@@ -20,25 +20,12 @@ class CommandDaoImpl(private val connection: SuspendingConnection, private val p
                 // Доступный пул uid'ов исчерпан
                 val curMaxUid = if (availableUids.maxUsedUid == -1) {
                     // Приложение только что запущено и нужно узнать, какой максимальный uid в БД
-                    val getMaxUidCommand =
-                        """
-                            SELECT MaxIds.max_id
-                            FROM MaxIds
-                            WHERE MaxIds.entity = 'USER';
-                        """.trimIndent()
                     transactionConnection.sendQuery(getMaxUidCommand).rows[0].getInt("max_id")!!
                 } else {
                     availableUids.maxAvailableUid
                 }
                 val nextMaxId = curMaxUid + poolSize
                 // Пополняем пул
-                val changeMaxUidCommand =
-                    """
-                        UPDATE MaxIds
-                        SET max_id = ?
-                        WHERE entity = 'USER'
-                          AND max_id = ?;
-                    """.trimIndent()
                 val result =
                     transactionConnection.sendPreparedStatement(changeMaxUidCommand, listOf(nextMaxId, curMaxUid))
                 val resultId = curMaxUid + 1 // Теперь это самый большой из используемых uid'ов
@@ -72,12 +59,10 @@ class CommandDaoImpl(private val connection: SuspendingConnection, private val p
 
     override suspend fun registerNewUser(): Int = connection.inTransaction {
         val newUid = getNewUid(it)
-        val newUserEventCommand =
-            """
-                    INSERT INTO Events (user_id, user_event_id)
-                    VALUES (?, 0);
-                """.trimIndent()
-        it.sendPreparedStatement(newUserEventCommand, listOf(newUid))
+        val result = it.sendPreparedStatement(newUserEventCommand, listOf(newUid))
+        if (result.rowsAffected != 1L) {
+            throw IllegalStateException("Error inserting new user")
+        }
         newUid
     }
 
@@ -99,20 +84,43 @@ class CommandDaoImpl(private val connection: SuspendingConnection, private val p
         }
         val maxUserEventId = getMaxUserEventId(uid, it)
         val curUserEventId = maxUserEventId + 1
-
-        val newEventCommand =
-            """
-                    INSERT INTO Events (user_id, user_event_id)
-                    VALUES (?, ?);
-                """.trimIndent()
         it.sendPreparedStatement(newEventCommand, listOf(uid, curUserEventId))
+        it.sendPreparedStatement(renewalCommand, listOf(uid, curUserEventId, until))
+        Unit
+    }
+
+    companion object {
+        val getMaxUidCommand =
+            """
+                SELECT MaxIds.max_id
+                FROM MaxIds
+                WHERE MaxIds.entity = 'USER';
+            """.trimIndent()
 
         val renewalCommand =
             """
-                    INSERT INTO SubscriptionRenewalsEvents (user_id, user_event_id, end_date)
-                    VALUES (?, ?, ?);
-                """.trimIndent()
-        it.sendPreparedStatement(renewalCommand, listOf(uid, curUserEventId, until))
-        Unit
+                INSERT INTO SubscriptionRenewalsEvents (user_id, user_event_id, end_date)
+                VALUES (?, ?, ?);
+            """.trimIndent()
+
+        val newEventCommand =
+            """
+                INSERT INTO Events (user_id, user_event_id)
+                VALUES (?, ?);
+            """.trimIndent()
+
+        val newUserEventCommand =
+            """
+                INSERT INTO Events (user_id, user_event_id)
+                VALUES (?, 0);
+            """.trimIndent()
+
+        val changeMaxUidCommand =
+            """
+                UPDATE MaxIds
+                SET max_id = ?
+                WHERE entity = 'USER'
+                  AND max_id = ?;
+            """.trimIndent()
     }
 }
