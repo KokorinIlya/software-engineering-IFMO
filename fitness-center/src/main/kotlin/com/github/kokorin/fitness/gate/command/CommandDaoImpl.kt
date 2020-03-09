@@ -11,24 +11,7 @@ class CommandDaoImpl(private val connection: SuspendingConnection) : CommonDao()
         uid: Int,
         transactionConnection: SuspendingConnection
     ): Event? {
-        val query =
-            """
-                WITH CurUserGateEvents AS (
-                    SELECT GateEvents.user_event_id,
-                           GateEvents.gate_event_type,
-                           GateEvents.event_timestamp
-                    FROM GateEvents
-                    WHERE GateEvents.user_id = ?
-                )
-                SELECT CurUserGateEvents.gate_event_type,
-                       CurUserGateEvents.event_timestamp
-                FROM CurUserGateEvents
-                WHERE CurUserGateEvents.user_event_id = (
-                    SELECT max(CurUserGateEvents.user_event_id)
-                    FROM CurUserGateEvents
-                );
-            """.trimIndent()
-        val result = transactionConnection.sendPreparedStatement(query, listOf(uid)).rows
+        val result = transactionConnection.sendPreparedStatement(lastGateEventQuery, listOf(uid)).rows
         return if (result.size == 0) {
             null
         } else {
@@ -46,17 +29,7 @@ class CommandDaoImpl(private val connection: SuspendingConnection) : CommonDao()
     ) {
         val maxEventId = getMaxUserEventId(uid, transactionConnection)
         val curEventId = maxEventId + 1
-        val newEventCommand =
-            """
-                INSERT INTO Events (user_id, user_event_id)
-                VALUES (?, ?);
-            """.trimIndent()
         transactionConnection.sendPreparedStatement(newEventCommand, listOf(uid, curEventId))
-        val newGateEventCommand =
-            """
-                INSERT INTO GateEvents (user_id, user_event_id, gate_event_type, event_timestamp)
-                VALUES (?, ?, ?, ?);
-            """.trimIndent()
         transactionConnection
             .sendPreparedStatement(newGateEventCommand, listOf(uid, curEventId, eventType, eventTimestamp))
     }
@@ -79,14 +52,43 @@ class CommandDaoImpl(private val connection: SuspendingConnection) : CommonDao()
     }
 
     override suspend fun processExit(uid: Int, exitTime: LocalDateTime): LocalDateTime = connection.inTransaction {
-        if (!doesUserExist(uid, it)) {
-            throw IllegalArgumentException("User with uid = $uid doesn't exist")
-        }
         val prevEvent = getLastUserGateEventType(uid, it)
         if (prevEvent?.eventType != GateEventType.ENTER) {
             throw IllegalArgumentException("Previous event for user $uid was $prevEvent, cannot exit now")
         }
         addGateEvent(uid, GateEventType.EXIT, exitTime, it)
         prevEvent.eventTimestamp
+    }
+
+    companion object {
+        val lastGateEventQuery =
+            """
+                WITH CurUserGateEvents AS (
+                    SELECT GateEvents.user_event_id,
+                           GateEvents.gate_event_type,
+                           GateEvents.event_timestamp
+                    FROM GateEvents
+                    WHERE GateEvents.user_id = ?
+                )
+                SELECT CurUserGateEvents.gate_event_type,
+                       CurUserGateEvents.event_timestamp
+                FROM CurUserGateEvents
+                WHERE CurUserGateEvents.user_event_id = (
+                    SELECT max(CurUserGateEvents.user_event_id)
+                    FROM CurUserGateEvents
+                );
+            """.trimIndent()
+
+        val newEventCommand =
+            """
+                INSERT INTO Events (user_id, user_event_id)
+                VALUES (?, ?);
+            """.trimIndent()
+
+        val newGateEventCommand =
+            """
+                INSERT INTO GateEvents (user_id, user_event_id, gate_event_type, event_timestamp)
+                VALUES (?, ?, ?, ?);
+            """.trimIndent()
     }
 }
