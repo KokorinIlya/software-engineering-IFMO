@@ -5,7 +5,6 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.SuspendingConnection
 import com.github.kokorin.fitness.common.dao.CommonDao
-import com.github.kokorin.fitness.manager.command.CommandDaoImpl
 import com.github.kokorin.fitness.manager.model.User
 import io.mockk.coEvery
 import io.mockk.every
