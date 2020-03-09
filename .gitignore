@@ -12,3 +12,4 @@ products-reactive/src/main/resources/application.conf
 postgresql_dir
 fitness-center/src/main/resources/gate/application.conf
 fitness-center/src/main/resources/stats/application.conf
+hashtags-watcher/src/main/resources/application.conf
