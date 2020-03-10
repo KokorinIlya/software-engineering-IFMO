@@ -71,7 +71,7 @@ class CommandDaoImpl(
     override suspend fun subscriptionRenewal(uid: Int, until: LocalDateTime) = connection.inTransaction {
         val curDate = clock.now()
         if (!curDate.isBefore(until)) {
-            throw IllegalArgumentException("Cannot process renewal until date $until at day $curDate")
+            throw IllegalArgumentException("Cannot process renewal until $until at $curDate")
         }
         if (!doesUserExist(uid, it)) {
             throw IllegalArgumentException("User with uid $uid doesn't exist")

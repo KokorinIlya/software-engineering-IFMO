@@ -5,7 +5,7 @@ import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.SuspendingConnection
 import com.github.kokorin.fitness.common.clock.Clock
-import com.github.kokorin.fitness.common.clock.TimeTravelClock
+import com.github.kokorin.fitness.common.clock.ConstantClock
 import com.github.kokorin.fitness.common.dao.CommonDao
 import org.junit.Test
 import org.junit.Assert.*
@@ -206,7 +206,7 @@ class CommandDaoImplTest {
 
                 callback(transactionConnection)
             }
-        val clock = TimeTravelClock(LocalDateTime.parse("1862-04-14T20:00:00"))
+        val clock = ConstantClock(LocalDateTime.parse("1862-04-14T20:00:00"))
         val dao = CommandDaoImpl(mainConnection, clock, poolSize = 2)
         val ans = dao.subscriptionRenewal(1, until)
         assertEquals(ans, Unit)
@@ -222,7 +222,7 @@ class CommandDaoImplTest {
                 val transactionConnection = mockk<SuspendingConnection>()
                 callback(transactionConnection)
             }
-        val clock = TimeTravelClock(LocalDateTime.parse("1862-04-14T20:00:00"))
+        val clock = ConstantClock(LocalDateTime.parse("1862-04-14T20:00:00"))
         val dao = CommandDaoImpl(mainConnection, clock, poolSize = 2)
         dao.subscriptionRenewal(1, until)
     }
@@ -281,7 +281,7 @@ class CommandDaoImplTest {
 
                 callback(transactionConnection)
             }
-        val clock = TimeTravelClock(LocalDateTime.parse("1862-04-14T20:00:00"))
+        val clock = ConstantClock(LocalDateTime.parse("1862-04-14T20:00:00"))
         val dao = CommandDaoImpl(mainConnection, clock, poolSize = 2)
         val ans = dao.subscriptionRenewal(1, until)
         assertEquals(ans, Unit)
@@ -318,7 +318,7 @@ class CommandDaoImplTest {
                 }
                 callback(transactionConnection)
             }
-        val clock = TimeTravelClock(LocalDateTime.parse("1862-04-14T20:00:00"))
+        val clock = ConstantClock(LocalDateTime.parse("1862-04-14T20:00:00"))
         val dao = CommandDaoImpl(mainConnection, clock, poolSize = 2)
         dao.subscriptionRenewal(1, until)
     }
