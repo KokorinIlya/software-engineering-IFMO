@@ -16,11 +16,11 @@ import org.junit.Assert.*
 
 class QueryDaoImplTest {
     @Test
-    fun getNonExistingUser() = runBlocking {
+    fun<T> getNonExistingUser() = runBlocking {
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -39,11 +39,11 @@ class QueryDaoImplTest {
     }
 
     @Test
-    fun getUserWithoutSubscriptions() = runBlocking {
+    fun<T> getUserWithoutSubscriptions() = runBlocking {
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -70,12 +70,12 @@ class QueryDaoImplTest {
     }
 
     @Test
-    fun getUserWithSubscriptions() = runBlocking {
+    fun<T> getUserWithSubscriptions() = runBlocking {
         val mainConnection = mockk<SuspendingConnection>()
         val until = LocalDateTime.parse("1862-04-15T20:00:00")
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {

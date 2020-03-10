@@ -16,12 +16,12 @@ import org.junit.Assert.*
 
 class CommandDaoImplTest {
     @Test
-    fun firstCorrectEnterTest() = runBlocking {
+    fun<T> firstCorrectEnterTest() = runBlocking {
         val enterTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -87,12 +87,12 @@ class CommandDaoImplTest {
     }
 
     @Test
-    fun enterAfterExitTest() = runBlocking {
+    fun<T> enterAfterExitTest() = runBlocking {
         val enterTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -164,12 +164,12 @@ class CommandDaoImplTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun nonExistingUserTest() = runBlocking {
+    fun<T> nonExistingUserTest() = runBlocking {
         val enterTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -186,12 +186,12 @@ class CommandDaoImplTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun enterWithNoSubscriptionTest() = runBlocking {
+    fun<T> enterWithNoSubscriptionTest() = runBlocking {
         val enterTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -225,12 +225,12 @@ class CommandDaoImplTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun enterWithIncorrectSubscriptionTest() = runBlocking {
+    fun<T> enterWithIncorrectSubscriptionTest() = runBlocking {
         val enterTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -260,12 +260,12 @@ class CommandDaoImplTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun enterAfterEnter() = runBlocking {
+    fun<T> enterAfterEnter() = runBlocking {
         val enterTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -310,13 +310,13 @@ class CommandDaoImplTest {
     }
 
     @Test
-    fun correctExitTest() = runBlocking {
+    fun<T> correctExitTest() = runBlocking {
         val exitTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val enterTime = LocalDateTime.parse("1862-04-13T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -364,13 +364,13 @@ class CommandDaoImplTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun exitAfterExitTest() = runBlocking {
+    fun<T> exitAfterExitTest() = runBlocking {
         val exitTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val prevExitTime = LocalDateTime.parse("1862-04-13T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
@@ -392,12 +392,12 @@ class CommandDaoImplTest {
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun exitAfterNothingTest() = runBlocking {
+    fun<T> exitAfterNothingTest() = runBlocking {
         val exitTime = LocalDateTime.parse("1862-04-14T20:00:00")
         val mainConnection = mockk<SuspendingConnection>()
-        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> Int>()) }
+        coEvery { mainConnection.inTransaction(any<suspend (SuspendingConnection) -> T>()) }
             .coAnswers {
-                val callback = args[0] as suspend (SuspendingConnection) -> Int
+                val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
 
                 coEvery {
