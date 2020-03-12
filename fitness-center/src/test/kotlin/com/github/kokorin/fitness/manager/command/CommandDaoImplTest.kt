@@ -6,6 +6,7 @@ import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.SuspendingConnection
 import com.github.kokorin.fitness.common.clock.Clock
 import com.github.kokorin.fitness.common.clock.ConstantClock
+import com.github.kokorin.fitness.common.dao.CommonCommandDao
 import com.github.kokorin.fitness.common.dao.CommonDao
 import org.junit.Test
 import org.junit.Assert.*
@@ -183,7 +184,7 @@ class CommandDaoImplTest {
                 }
 
                 coEvery {
-                    transactionConnection.sendPreparedStatement(CommonDao.maxUserEventIdQuery, listOf(1))
+                    transactionConnection.sendPreparedStatement(CommonCommandDao.maxUserEventIdQuery, listOf(1))
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()
@@ -258,7 +259,7 @@ class CommandDaoImplTest {
                 }
 
                 coEvery {
-                    transactionConnection.sendPreparedStatement(CommonDao.maxUserEventIdQuery, listOf(1))
+                    transactionConnection.sendPreparedStatement(CommonCommandDao.maxUserEventIdQuery, listOf(1))
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()

@@ -4,6 +4,7 @@ import com.github.jasync.sql.db.QueryResult
 import com.github.jasync.sql.db.ResultSet
 import com.github.jasync.sql.db.RowData
 import com.github.jasync.sql.db.SuspendingConnection
+import com.github.kokorin.fitness.common.dao.CommonCommandDao
 import com.github.kokorin.fitness.common.dao.CommonDao
 import com.github.kokorin.fitness.gate.model.GateEventType
 import io.mockk.coEvery
@@ -54,7 +55,7 @@ class CommandDaoImplTest {
                 }
 
                 coEvery {
-                    transactionConnection.sendPreparedStatement(CommonDao.maxUserEventIdQuery, listOf(1))
+                    transactionConnection.sendPreparedStatement(CommonCommandDao.maxUserEventIdQuery, listOf(1))
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()
@@ -131,7 +132,7 @@ class CommandDaoImplTest {
                 }
 
                 coEvery {
-                    transactionConnection.sendPreparedStatement(CommonDao.maxUserEventIdQuery, listOf(1))
+                    transactionConnection.sendPreparedStatement(CommonCommandDao.maxUserEventIdQuery, listOf(1))
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()
@@ -332,7 +333,7 @@ class CommandDaoImplTest {
                 }
 
                 coEvery {
-                    transactionConnection.sendPreparedStatement(CommonDao.maxUserEventIdQuery, listOf(1))
+                    transactionConnection.sendPreparedStatement(CommonCommandDao.maxUserEventIdQuery, listOf(1))
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()
