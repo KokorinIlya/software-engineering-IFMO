@@ -4,7 +4,7 @@ import com.github.jasync.sql.db.SuspendingConnection
 import org.jetbrains.annotations.Contract
 
 abstract class CommonCommandDao {
-    @Contract("doesUserExist(uid, connection) == true")
+    @Contract("!doesUserExist(uid, connection) -> fail")
     protected suspend fun getMaxUserEventId(uid: Int, connection: SuspendingConnection): Int {
         return connection
             .sendPreparedStatement(maxUserEventIdQuery, listOf(uid))
