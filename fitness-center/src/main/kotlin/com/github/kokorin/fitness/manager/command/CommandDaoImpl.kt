@@ -25,25 +25,23 @@ class CommandDaoImpl(
                 // Доступный пул uid'ов исчерпан
                 val curMaxUid = if (availableUids.maxUsedUid == -1) {
                     // Приложение только что запущено и нужно узнать, какой максимальный uid в БД
-                    transactionConnection.sendQuery(getMaxUidCommand).rows[0].getInt("max_id")!!
+                    transactionConnection.sendQuery(getMaxUidQuery).rows[0].getInt("max_id")!!
                 } else {
                     availableUids.maxAvailableUid
                 }
-                val nextMaxId = curMaxUid + poolSize
+                val nextMaxUid = curMaxUid + poolSize
                 // Пополняем пул
                 val result =
-                    transactionConnection.sendPreparedStatement(changeMaxUidCommand, listOf(nextMaxId, curMaxUid))
+                    transactionConnection.sendPreparedStatement(changeMaxUidCommand, listOf(nextMaxUid, curMaxUid))
+                // Если не получилось обновить пул в БД, продолжаем пытаться
+                // (безопасно, т.к. изменений в базу внесено не было)
+                if (result.rowsAffected != 1L) {
+                    continue
+                }
                 val resultId = curMaxUid + 1 // Теперь это самый большой из используемых uid'ов
                 // Если не получилось обновить пул так как пул был обновлён другим потоком, выдаём ошибку
-                if (result.rowsAffected != 1L ||
-                    !availableUidsRef.compareAndSet(
-                        availableUids,
-                        AvailableUids(
-                            resultId,
-                            nextMaxId
-                        )
-                    )
-                ) {
+                // и откатываем все изменения в БД
+                if (!availableUidsRef.compareAndSet(availableUids, AvailableUids(resultId, nextMaxUid))) {
                     throw IllegalStateException("Max UID was changed concurrently")
                 }
                 return resultId
@@ -92,7 +90,7 @@ class CommandDaoImpl(
     }
 
     companion object {
-        val getMaxUidCommand =
+        val getMaxUidQuery =
             """
                 SELECT MaxIds.max_id
                 FROM MaxIds

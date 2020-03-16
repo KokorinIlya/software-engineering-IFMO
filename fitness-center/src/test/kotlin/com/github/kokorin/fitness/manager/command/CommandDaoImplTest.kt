@@ -25,7 +25,7 @@ class CommandDaoImplTest {
                 val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
                 coEvery {
-                    transactionConnection.sendQuery(CommandDaoImpl.getMaxUidCommand)
+                    transactionConnection.sendQuery(CommandDaoImpl.getMaxUidQuery)
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()
@@ -62,7 +62,7 @@ class CommandDaoImplTest {
                 val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
                 coEvery {
-                    transactionConnection.sendQuery(CommandDaoImpl.getMaxUidCommand)
+                    transactionConnection.sendQuery(CommandDaoImpl.getMaxUidQuery)
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()
@@ -107,7 +107,7 @@ class CommandDaoImplTest {
                 val callback = args[0] as suspend (SuspendingConnection) -> T
                 val transactionConnection = mockk<SuspendingConnection>()
                 coEvery {
-                    transactionConnection.sendQuery(CommandDaoImpl.getMaxUidCommand)
+                    transactionConnection.sendQuery(CommandDaoImpl.getMaxUidQuery)
                 }.answers {
                     val rows = mockk<ResultSet>()
                     val rowData = mockk<RowData>()
