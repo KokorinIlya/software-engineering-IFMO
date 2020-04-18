@@ -19,7 +19,7 @@ import personalapi.model.CompanyStocks
 class PersonalAccountDaoImplTest {
     private val stockMarketClientConfig = object : StockMarketClientConfig {
         override val host: String = "localhost"
-        override val port: Int = 8841
+        override val port: Int = 8081
         override val schema: String = "http"
 
     }

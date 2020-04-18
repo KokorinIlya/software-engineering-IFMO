@@ -64,12 +64,12 @@ task removeImage(type: DockerRemoveImage) {
     }
 }
 
-task copyJar(type: Copy, dependsOn: jar) {
+task copyJar(type: Copy, dependsOn: [jar]) {
     from "build/libs/exchange-${project.version}.jar"
     into 'build/docker'
 }
 
-task createDockerfile(type: Dockerfile, dependsOn: copyJar) {
+task createDockerfile(type: Dockerfile, dependsOn: [copyJar]) {
     from 'openjdk:8'
     addFile("exchange-${project.version}.jar", "/usr/src/jar/exchange-${project.version}.jar")
     defaultCommand("java", "-jar", "/usr/src/jar/exchange-${project.version}.jar")
